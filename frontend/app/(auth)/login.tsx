@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -46,8 +47,12 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Ionicons name="home" size={60} color="#3b82f6" />
-          <Text style={styles.title}>CRM Inmobiliario</Text>
+          <Image 
+            source={require('../../assets/images/logo-login.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>M&D Propiedades - CRM</Text>
           <Text style={styles.subtitle}>Inicia sesión en tu cuenta</Text>
         </View>
 
@@ -116,11 +121,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
+  logo: {
+    width: 125,
+    height: 125,
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#111827',
     marginTop: 16,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,

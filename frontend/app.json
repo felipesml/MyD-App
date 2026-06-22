@@ -1,13 +1,18 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "M&D Propiedades CRM",
+    "slug": "md-propiedades-crm",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/logo-splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -28,10 +33,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/logo-splash.png",
+          "imageWidth": 300,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#ffffff"
         }
       ]
     ],

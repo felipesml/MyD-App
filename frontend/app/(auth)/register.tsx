@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -62,7 +63,11 @@ export default function RegisterScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
-          <Ionicons name="person-add" size={60} color="#3b82f6" />
+          <Image 
+            source={require('../../assets/images/logo-login.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>Crear Cuenta</Text>
           <Text style={styles.subtitle}>Regístrate como agente inmobiliario</Text>
         </View>
@@ -173,11 +178,17 @@ const styles = StyleSheet.create({
     top: 0,
     padding: 8,
   },
+  logo: {
+    width: 125,
+    height: 125,
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#111827',
     marginTop: 16,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
