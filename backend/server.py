@@ -153,6 +153,7 @@ class PropertyCreate(BaseModel):
     title: str
     address: str
     city: str
+    region: str
     price: float
     property_type: str  # "casa" | "apartamento" | "terreno" | "comercial" | "oficina"
     transaction_type: str  # "venta" | "arriendo"
@@ -173,6 +174,7 @@ class PropertyResponse(BaseModel):
     title: str
     address: str
     city: str
+    region: str
     price: float
     property_type: str
     transaction_type: str
@@ -698,6 +700,7 @@ async def get_properties(agent = Depends(get_current_agent)):
             title=prop["title"],
             address=prop["address"],
             city=prop["city"],
+            region=prop.get("region", ""),
             price=prop["price"],
             property_type=prop["property_type"],
             transaction_type=prop["transaction_type"],
@@ -735,6 +738,7 @@ async def create_property(property_data: PropertyCreate, agent = Depends(get_cur
         "title": property_data.title,
         "address": property_data.address,
         "city": property_data.city,
+        "region": property_data.region,
         "price": property_data.price,
         "property_type": property_data.property_type,
         "transaction_type": property_data.transaction_type,
@@ -770,6 +774,7 @@ async def create_property(property_data: PropertyCreate, agent = Depends(get_cur
         title=property_dict["title"],
         address=property_dict["address"],
         city=property_dict["city"],
+        region=property_dict["region"],
         price=property_dict["price"],
         property_type=property_dict["property_type"],
         transaction_type=property_dict["transaction_type"],
@@ -809,6 +814,7 @@ async def get_properties_by_client(client_id: str, agent = Depends(get_current_a
         title=prop["title"],
         address=prop["address"],
         city=prop["city"],
+        region=prop.get("region", ""),
         price=prop["price"],
         property_type=prop["property_type"],
         transaction_type=prop["transaction_type"],
@@ -849,6 +855,7 @@ async def get_property(property_id: str, agent = Depends(get_current_agent)):
         title=prop["title"],
         address=prop["address"],
         city=prop["city"],
+        region=prop.get("region", ""),
         price=prop["price"],
         property_type=prop["property_type"],
         transaction_type=prop["transaction_type"],
@@ -891,6 +898,7 @@ async def update_property(property_id: str, property_data: PropertyCreate, agent
         "title": property_data.title,
         "address": property_data.address,
         "city": property_data.city,
+        "region": property_data.region,
         "price": property_data.price,
         "property_type": property_data.property_type,
         "transaction_type": property_data.transaction_type,
@@ -928,6 +936,7 @@ async def update_property(property_id: str, property_data: PropertyCreate, agent
         title=update_dict["title"],
         address=update_dict["address"],
         city=update_dict["city"],
+        region=update_dict["region"],
         price=update_dict["price"],
         property_type=update_dict["property_type"],
         transaction_type=update_dict["transaction_type"],

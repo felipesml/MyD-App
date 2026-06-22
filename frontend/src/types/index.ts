@@ -47,6 +47,7 @@ export interface Property {
   title: string;
   address: string;
   city: string;
+  region: string;
   price: number;
   property_type: 'casa' | 'apartamento' | 'terreno' | 'comercial' | 'oficina';
   transaction_type: 'venta' | 'arriendo';
