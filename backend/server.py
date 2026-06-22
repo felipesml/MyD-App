@@ -72,7 +72,7 @@ async def get_current_agent(credentials: HTTPAuthorizationCredentials = Depends(
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.JWTError:
+    except Exception:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
     
     agent = await db.agents.find_one({"_id": ObjectId(agent_id)})
