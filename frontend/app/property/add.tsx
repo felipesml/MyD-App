@@ -13,17 +13,38 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { propertiesAPI, clientsAPI } from '../../src/api/client';
+import { propertiesAPI } from '../../src/api/client';
 import { Client } from '../../src/types';
 import * as ImagePicker from 'expo-image-picker';
+import ClientSelectorModal from '../../src/components/ClientSelectorModal';
+
+const REGIONES_CHILE = [
+  'Región de Arica y Parinacota',
+  'Región de Tarapacá',
+  'Región de Antofagasta',
+  'Región de Atacama',
+  'Región de Coquimbo',
+  'Región de Valparaíso',
+  'Región Metropolitana',
+  'Región del Libertador General Bernardo O\'Higgins',
+  'Región del Maule',
+  'Región del Ñuble',
+  'Región del Biobío',
+  'Región de La Araucanía',
+  'Región de Los Ríos',
+  'Región de Los Lagos',
+  'Región de Aysén del General Carlos Ibáñez del Campo',
+  'Región de Magallanes y de la Antártica Chilena',
+];
 
 export default function AddPropertyScreen() {
   const router = useRouter();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [showClientModal, setShowClientModal] = useState(false);
   const [title, setTitle] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
+  const [region, setRegion] = useState('Región Metropolitana');
   const [price, setPrice] = useState('');
   const [propertyType, setPropertyType] = useState<'casa' | 'apartamento' | 'terreno' | 'comercial' | 'oficina'>('casa');
   const [transactionType, setTransactionType] = useState<'venta' | 'arriendo'>('venta');
@@ -35,32 +56,62 @@ export default function AddPropertyScreen() {
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingClients, setIsLoadingClients] = useState(true);
 
   useEffect(() => {
-    loadClients();
     requestPermissions();
   }, []);
 
   const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    const [mediaLibraryStatus, cameraStatus] = await Promise.all([
+      ImagePicker.requestMediaLibraryPermissionsAsync(),
+      ImagePicker.requestCameraPermissionsAsync(),
+    ]);
+    
+    if (mediaLibraryStatus.status !== 'granted') {
       Alert.alert('Permiso requerido', 'Se necesita acceso a la galería para agregar imágenes');
+    }
+    if (cameraStatus.status !== 'granted') {
+      Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara para tomar fotos');
     }
   };
 
-  const loadClients = async () => {
+  const showImageOptions = () => {
+    Alert.alert(
+      'Agregar Imagen',
+      'Selecciona una opción',
+      [
+        {
+          text: 'Tomar Foto',
+          onPress: () => takePhoto(),
+        },
+        {
+          text: 'Elegir de Galería',
+          onPress: () => pickImage(),
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const takePhoto = async () => {
     try {
-      const data = await clientsAPI.getAll();
-      setClients(data);
-      if (data.length > 0) {
-        setSelectedClientId(data[0].id);
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setImages([...images, `data:image/jpeg;base64,${result.assets[0].base64}`]);
       }
     } catch (error) {
-      console.error('Error loading clients:', error);
-      Alert.alert('Error', 'No se pudieron cargar los clientes');
-    } finally {
-      setIsLoadingClients(false);
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'No se pudo tomar la foto');
     }
   };
 
@@ -88,18 +139,19 @@ export default function AddPropertyScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !address.trim() || !city.trim() || !price.trim() || !selectedClientId) {
-      Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
+    if (!title.trim() || !address.trim() || !city.trim() || !price.trim() || !selectedClient) {
+      Alert.alert('Error', 'Por favor completa todos los campos obligatorios y selecciona un cliente');
       return;
     }
 
     setIsLoading(true);
     try {
       await propertiesAPI.create({
-        client_id: selectedClientId,
+        client_id: selectedClient.id,
         title: title.trim(),
         address: address.trim(),
         city: city.trim(),
+        region: region,
         price: parseFloat(price),
         property_type: propertyType,
         transaction_type: transactionType,
@@ -127,28 +179,6 @@ export default function AddPropertyScreen() {
     }
   };
 
-  if (isLoadingClients) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={styles.loadingText}>Cargando clientes...</Text>
-      </View>
-    );
-  }
-
-  if (clients.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="people-outline" size={64} color="#9ca3af" />
-        <Text style={styles.emptyText}>No hay clientes registrados</Text>
-        <Text style={styles.emptySubtext}>Primero debes agregar un cliente (dueño de la propiedad)</Text>
-        <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/client/add')}>
-          <Text style={styles.emptyButtonText}>Agregar Cliente</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -156,31 +186,32 @@ export default function AddPropertyScreen() {
     >
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
+          {/* Cliente */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
               Cliente (Dueño) <Text style={styles.required}>*</Text>
             </Text>
-            <ScrollView horizontal style={styles.clientSelector}>
-              {clients.map((client) => (
-                <TouchableOpacity
-                  key={client.id}
-                  style={[
-                    styles.clientChip,
-                    selectedClientId === client.id && styles.clientChipActive,
-                  ]}
-                  onPress={() => setSelectedClientId(client.id)}
-                >
-                  <Text
-                    style={[
-                      styles.clientChipText,
-                      selectedClientId === client.id && styles.clientChipTextActive,
-                    ]}
-                  >
-                    {client.name}
-                  </Text>
+            {selectedClient ? (
+              <View style={styles.selectedClientCard}>
+                <View style={styles.selectedClientInfo}>
+                  <View style={styles.clientAvatar}>
+                    <Text style={styles.clientInitial}>{selectedClient.name[0].toUpperCase()}</Text>
+                  </View>
+                  <View style={styles.clientDetails}>
+                    <Text style={styles.selectedClientName}>{selectedClient.name}</Text>
+                    <Text style={styles.selectedClientPhone}>{selectedClient.phone}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={() => setShowClientModal(true)}>
+                  <Ionicons name="swap-horizontal" size={24} color="#3b82f6" />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.selectClientButton} onPress={() => setShowClientModal(true)}>
+                <Ionicons name="person-add" size={24} color="#3b82f6" />
+                <Text style={styles.selectClientText}>Seleccionar Cliente</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -224,6 +255,25 @@ export default function AddPropertyScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
+              Región <Text style={styles.required}>*</Text>
+            </Text>
+            <ScrollView horizontal style={styles.regionSelector} showsHorizontalScrollIndicator={false}>
+              {REGIONES_CHILE.map((reg) => (
+                <TouchableOpacity
+                  key={reg}
+                  style={[styles.regionChip, region === reg && styles.regionChipActive]}
+                  onPress={() => setRegion(reg)}
+                >
+                  <Text style={[styles.regionChipText, region === reg && styles.regionChipTextActive]}>
+                    {reg.replace('Región de ', '').replace('Región del ', '').replace('Región ', '')}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>
               Precio (CLP) <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
@@ -238,7 +288,7 @@ export default function AddPropertyScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Tipo de Propiedad</Text>
-            <ScrollView horizontal style={styles.typeSelector}>
+            <ScrollView horizontal style={styles.typeSelector} showsHorizontalScrollIndicator={false}>
               {(['casa', 'apartamento', 'terreno', 'comercial', 'oficina'] as const).map((type) => (
                 <TouchableOpacity
                   key={type}
@@ -343,13 +393,13 @@ export default function AddPropertyScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Imágenes</Text>
-            <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+            <TouchableOpacity style={styles.addImageButton} onPress={showImageOptions}>
               <Ionicons name="camera" size={24} color="#3b82f6" />
-              <Text style={styles.addImageText}>Agregar Imagen</Text>
+              <Text style={styles.addImageText}>Tomar Foto o Elegir Imagen</Text>
             </TouchableOpacity>
 
             {images.length > 0 && (
-              <ScrollView horizontal style={styles.imagesContainer}>
+              <ScrollView horizontal style={styles.imagesContainer} showsHorizontalScrollIndicator={false}>
                 {images.map((image, index) => (
                   <View key={index} style={styles.imageWrapper}>
                     <View style={styles.imagePlaceholder}>
@@ -388,6 +438,13 @@ export default function AddPropertyScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <ClientSelectorModal
+        visible={showClientModal}
+        onClose={() => setShowClientModal(false)}
+        onSelectClient={setSelectedClient}
+        selectedClientId={selectedClient?.id}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -397,53 +454,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f9fafb',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f9fafb',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-    backgroundColor: '#f9fafb',
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 24,
-  },
-  emptyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 40,
   },
   form: {
     gap: 20,
@@ -473,10 +489,69 @@ const styles = StyleSheet.create({
     height: 100,
     paddingTop: 12,
   },
-  clientSelector: {
+  selectClientButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#dbeafe',
+    borderWidth: 2,
+    borderColor: '#3b82f6',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    padding: 20,
+    gap: 12,
+  },
+  selectClientText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3b82f6',
+  },
+  selectedClientCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#3b82f6',
+    borderRadius: 12,
+    padding: 16,
+  },
+  selectedClientInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  clientAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#dbeafe',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  clientInitial: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  clientDetails: {
+    flex: 1,
+  },
+  selectedClientName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  selectedClientPhone: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  regionSelector: {
     flexDirection: 'row',
   },
-  clientChip: {
+  regionChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -485,16 +560,16 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
     marginRight: 8,
   },
-  clientChipActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+  regionChipActive: {
+    backgroundColor: '#6366f1',
+    borderColor: '#6366f1',
   },
-  clientChipText: {
-    fontSize: 14,
+  regionChipText: {
+    fontSize: 13,
     color: '#374151',
     fontWeight: '500',
   },
-  clientChipTextActive: {
+  regionChipTextActive: {
     color: '#fff',
   },
   typeSelector: {

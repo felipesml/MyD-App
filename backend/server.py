@@ -133,6 +133,7 @@ class LeadCreate(BaseModel):
     status: str = "nuevo"  # "nuevo" | "contactado" | "visita_programada" | "negociacion" | "cerrado" | "perdido"
     source: str = "otro"  # "web" | "referido" | "llamada" | "redes_sociales" | "otro"
     notes: Optional[str] = None
+    interested_properties: Optional[List[str]] = []  # Array de IDs de propiedades
 
 class LeadResponse(BaseModel):
     id: str
@@ -147,6 +148,7 @@ class LeadResponse(BaseModel):
     notes: Optional[str] = None
     created_at: datetime
     last_contact_date: Optional[datetime] = None
+    interested_properties: Optional[List[str]] = []
 
 class PropertyCreate(BaseModel):
     client_id: str
