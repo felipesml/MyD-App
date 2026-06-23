@@ -155,4 +155,27 @@ export const dashboardAPI = {
   },
 };
 
+// Buyer Reserves API
+export const buyerReservesAPI = {
+  getAll: async (): Promise<BuyerReserve[]> => {
+    const response = await apiClient.get<BuyerReserve[]>('/buyer-reserves');
+    return response.data;
+  },
+  getById: async (id: string): Promise<BuyerReserve> => {
+    const response = await apiClient.get<BuyerReserve>(`/buyer-reserves/${id}`);
+    return response.data;
+  },
+  create: async (data: Omit<BuyerReserve, 'id' | 'agent_id' | 'created_at'>): Promise<BuyerReserve> => {
+    const response = await apiClient.post<BuyerReserve>('/buyer-reserves', data);
+    return response.data;
+  },
+  update: async (id: string, data: Omit<BuyerReserve, 'id' | 'agent_id' | 'created_at'>): Promise<BuyerReserve> => {
+    const response = await apiClient.put<BuyerReserve>(`/buyer-reserves/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/buyer-reserves/${id}`);
+  },
+};
+
 export default apiClient;
