@@ -10,10 +10,24 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Calendar } from 'react-native-calendars';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appointmentsAPI } from '../../src/api/client';
 import { Appointment } from '../../src/types';
 import { format, isSameDay, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { fonts, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
+
+// Configure Spanish locale for calendar
+LocaleConfig.locales['es'] = {
+  monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+  monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+  dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+  dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+  today: 'Hoy'
+};
+LocaleConfig.defaultLocale = 'es';
 
 const TYPE_ICONS: Record<string, string> = {
   visita: 'home',
@@ -29,8 +43,17 @@ const TYPE_COLORS: Record<string, string> = {
   otro: '#8b5cf6',
 };
 
+const TYPE_LABELS: Record<string, string> = {
+  visita: 'Visita',
+  reunion: 'Reunión',
+  llamada: 'Llamada',
+  otro: 'Otro',
+};
+
 export default function CalendarScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +102,7 @@ export default function CalendarScreen() {
     marked[selectedDate] = {
       ...marked[selectedDate],
       selected: true,
-      selectedColor: '#3b82f6',
+      selectedColor: brandColors.calendar,
     };
 
     setMarkedDates(marked);
@@ -100,12 +123,13 @@ export default function CalendarScreen() {
       .sort((a, b) => new Date(a.date_time).getTime() - new Date(b.date_time).getTime());
   };
 
+  const styles = createStyles(colors, insets);
   const selectedDateAppointments = getAppointmentsForSelectedDate();
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={brandColors.calendar} />
       </View>
     );
   }
@@ -113,15 +137,30 @@ export default function CalendarScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Calendario</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/appointment/add')}>
+        <View>
+          <Text style={styles.headerTitle}>Agenda</Text>
+          <Text style={styles.headerSubtitle}>{appointments.length} citas programadas</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.addButton} 
+          onPress={() => router.push('/appointment/add')}
+          activeOpacity={0.8}
+        >
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
       <ScrollView
         style={styles.content}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isRefreshing} 
+            onRefresh={handleRefresh}
+            tintColor={brandColors.calendar}
+            colors={[brandColors.calendar]}
+          />
+        }
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.calendarContainer}>
           <Calendar
@@ -130,31 +169,54 @@ export default function CalendarScreen() {
             markedDates={markedDates}
             markingType={'multi-dot'}
             theme={{
-              todayTextColor: '#3b82f6',
-              selectedDayBackgroundColor: '#3b82f6',
+              backgroundColor: colors.surface,
+              calendarBackground: colors.surface,
+              textSectionTitleColor: colors.textMuted,
+              selectedDayBackgroundColor: brandColors.calendar,
               selectedDayTextColor: '#ffffff',
-              arrowColor: '#3b82f6',
-              monthTextColor: '#111827',
-              textMonthFontWeight: 'bold',
-              textMonthFontSize: 16,
+              todayTextColor: brandColors.primary,
+              dayTextColor: colors.text,
+              textDisabledColor: colors.textMuted,
+              dotColor: brandColors.calendar,
+              selectedDotColor: '#ffffff',
+              arrowColor: brandColors.calendar,
+              monthTextColor: colors.text,
+              indicatorColor: brandColors.calendar,
+              textDayFontFamily: fonts.regular,
+              textMonthFontFamily: fonts.bold,
+              textDayHeaderFontFamily: fonts.medium,
+              textMonthFontSize: 18,
+              textDayFontSize: 15,
+              textDayHeaderFontSize: 13,
             }}
+            style={styles.calendar}
           />
         </View>
 
         <View style={styles.appointmentsSection}>
-          <Text style={styles.sectionTitle}>
-            Citas del {format(parseISO(selectedDate), 'd/MM/yyyy')}
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {format(parseISO(selectedDate), "d 'de' MMMM", { locale: es })}
+            </Text>
+            <Text style={styles.sectionCount}>
+              {selectedDateAppointments.length} {selectedDateAppointments.length === 1 ? 'cita' : 'citas'}
+            </Text>
+          </View>
 
           {selectedDateAppointments.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="calendar-outline" size={48} color="#9ca3af" />
+              <View style={styles.emptyIconContainer}>
+                <Ionicons name="calendar-outline" size={40} color={brandColors.calendar} />
+              </View>
+              <Text style={styles.emptyTitle}>Sin citas</Text>
               <Text style={styles.emptyText}>No hay citas programadas para este día</Text>
               <TouchableOpacity
                 style={styles.emptyButton}
                 onPress={() => router.push('/appointment/add')}
+                activeOpacity={0.8}
               >
-                <Text style={styles.emptyButtonText}>Agregar cita</Text>
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.emptyButtonText}>Agregar Cita</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -164,6 +226,7 @@ export default function CalendarScreen() {
                   key={appointment.id}
                   style={styles.appointmentCard}
                   onPress={() => router.push(`/appointment/${appointment.id}`)}
+                  activeOpacity={0.7}
                 >
                   <View
                     style={[
@@ -173,36 +236,93 @@ export default function CalendarScreen() {
                   >
                     <Ionicons
                       name={TYPE_ICONS[appointment.appointment_type] as any}
-                      size={24}
+                      size={22}
                       color={TYPE_COLORS[appointment.appointment_type]}
                     />
                   </View>
                   <View style={styles.appointmentInfo}>
-                    <Text style={styles.appointmentTitle}>{appointment.title}</Text>
-                    {appointment.related_name && (
-                      <Text style={styles.appointmentRelated}>{appointment.related_name}</Text>
-                    )}
-                    <View style={styles.appointmentTime}>
-                      <Ionicons name="time" size={12} color="#6b7280" />
-                      <Text style={styles.appointmentTimeText}>
-                        {format(parseISO(appointment.date_time), 'HH:mm')} -{' '}
-                        {appointment.duration_minutes} min
+                    <View style={styles.appointmentTitleRow}>
+                      <Text style={styles.appointmentTitle} numberOfLines={1}>
+                        {appointment.title}
                       </Text>
+                      <View style={[
+                        styles.typeBadge,
+                        { backgroundColor: TYPE_COLORS[appointment.appointment_type] + '20' }
+                      ]}>
+                        <Text style={[
+                          styles.typeBadgeText,
+                          { color: TYPE_COLORS[appointment.appointment_type] }
+                        ]}>
+                          {TYPE_LABELS[appointment.appointment_type]}
+                        </Text>
+                      </View>
+                    </View>
+                    {appointment.related_name && (
+                      <Text style={styles.appointmentRelated} numberOfLines={1}>
+                        <Ionicons name="person" size={12} color={colors.textMuted} /> {appointment.related_name}
+                      </Text>
+                    )}
+                    <View style={styles.appointmentMeta}>
+                      <View style={styles.appointmentTime}>
+                        <Ionicons name="time-outline" size={14} color={brandColors.calendar} />
+                        <Text style={styles.appointmentTimeText}>
+                          {format(parseISO(appointment.date_time), 'HH:mm')}
+                        </Text>
+                      </View>
+                      <View style={styles.appointmentDuration}>
+                        <Ionicons name="hourglass-outline" size={14} color={colors.textMuted} />
+                        <Text style={styles.appointmentDurationText}>
+                          {appointment.duration_minutes} min
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          {
+                            backgroundColor:
+                              appointment.status === 'programada'
+                                ? '#10b98120'
+                                : appointment.status === 'completada'
+                                ? '#3b82f620'
+                                : '#ef444420',
+                          },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.statusDot,
+                            {
+                              backgroundColor:
+                                appointment.status === 'programada'
+                                  ? '#10b981'
+                                  : appointment.status === 'completada'
+                                  ? '#3b82f6'
+                                  : '#ef4444',
+                            },
+                          ]}
+                        />
+                        <Text
+                          style={[
+                            styles.statusText,
+                            {
+                              color:
+                                appointment.status === 'programada'
+                                  ? '#10b981'
+                                  : appointment.status === 'completada'
+                                  ? '#3b82f6'
+                                  : '#ef4444',
+                            },
+                          ]}
+                        >
+                          {appointment.status === 'programada' 
+                            ? 'Programada' 
+                            : appointment.status === 'completada'
+                            ? 'Completada'
+                            : 'Cancelada'}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                  <View
-                    style={[
-                      styles.statusDot,
-                      {
-                        backgroundColor:
-                          appointment.status === 'programada'
-                            ? '#10b981'
-                            : appointment.status === 'completada'
-                            ? '#3b82f6'
-                            : '#ef4444',
-                      },
-                    ]}
-                  />
                 </TouchableOpacity>
               ))}
             </View>
@@ -213,130 +333,215 @@ export default function CalendarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    paddingTop: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    flex: 1,
-  },
-  calendarContainer: {
-    backgroundColor: '#fff',
-    margin: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  appointmentsSection: {
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  appointmentsList: {
-    gap: 12,
-  },
-  appointmentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  appointmentIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  appointmentInfo: {
-    flex: 1,
-  },
-  appointmentTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  appointmentRelated: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 4,
-  },
-  appointmentTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  appointmentTimeText: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginLeft: 4,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  emptyState: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 24,
-  },
-  emptyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: any, insets: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.md,
+      paddingTop: insets.top + spacing.sm,
+      paddingBottom: spacing.md,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 28,
+      color: colors.text,
+    },
+    headerSubtitle: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    addButton: {
+      backgroundColor: brandColors.calendar,
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.md,
+    },
+    content: {
+      flex: 1,
+    },
+    calendarContainer: {
+      backgroundColor: colors.surface,
+      margin: spacing.md,
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      ...shadows.sm,
+    },
+    calendar: {
+      borderRadius: borderRadius.lg,
+    },
+    appointmentsSection: {
+      paddingHorizontal: spacing.md,
+      paddingBottom: spacing.xl,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    sectionTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 18,
+      color: colors.text,
+    },
+    sectionCount: {
+      fontFamily: fonts.medium,
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    appointmentsList: {
+      gap: spacing.sm,
+    },
+    appointmentCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: colors.surface,
+      padding: spacing.md,
+      borderRadius: borderRadius.lg,
+      ...shadows.sm,
+    },
+    appointmentIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    appointmentInfo: {
+      flex: 1,
+    },
+    appointmentTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 4,
+    },
+    appointmentTitle: {
+      fontFamily: fonts.semiBold,
+      fontSize: 16,
+      color: colors.text,
+      flex: 1,
+      marginRight: spacing.sm,
+    },
+    typeBadge: {
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    typeBadgeText: {
+      fontFamily: fonts.medium,
+      fontSize: 11,
+    },
+    appointmentRelated: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      marginBottom: spacing.xs,
+    },
+    appointmentMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    appointmentTime: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    appointmentTimeText: {
+      fontFamily: fonts.semiBold,
+      fontSize: 14,
+      color: brandColors.calendar,
+    },
+    appointmentDuration: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    appointmentDurationText: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+    },
+    statusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 10,
+      gap: 4,
+    },
+    statusDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    statusText: {
+      fontFamily: fonts.medium,
+      fontSize: 11,
+    },
+    emptyState: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+    emptyIconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: brandColors.calendarLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    emptyTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: spacing.xs,
+    },
+    emptyText: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginBottom: spacing.lg,
+    },
+    emptyButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: brandColors.calendar,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.md,
+      gap: spacing.xs,
+    },
+    emptyButtonText: {
+      fontFamily: fonts.semiBold,
+      color: '#fff',
+      fontSize: 16,
+    },
+  });

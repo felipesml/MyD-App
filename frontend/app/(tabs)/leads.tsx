@@ -7,12 +7,17 @@ import {
   RefreshControl,
   ActivityIndicator,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { leadsAPI } from '../../src/api/client';
 import { Lead } from '../../src/types';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { fonts, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
+import WhatsAppButton from '../../src/components/WhatsAppButton';
 
 const STATUS_COLORS: Record<string, string> = {
   nuevo: '#3b82f6',
@@ -26,7 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUS_LABELS: Record<string, string> = {
   nuevo: 'Nuevo',
   contactado: 'Contactado',
-  visita_programada: 'Visita Programada',
+  visita_programada: 'Visita',
   negociacion: 'Negociación',
   cerrado: 'Cerrado',
   perdido: 'Perdido',
@@ -34,6 +39,8 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function LeadsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,8 +94,14 @@ export default function LeadsScreen() {
     loadLeads();
   };
 
+  const styles = createStyles(colors, insets);
+
   const renderLead = ({ item }: { item: Lead }) => (
-    <TouchableOpacity style={styles.leadCard} onPress={() => router.push(`/lead/${item.id}`)}>
+    <TouchableOpacity 
+      style={styles.leadCard} 
+      onPress={() => router.push(`/lead/${item.id}`)}
+      activeOpacity={0.7}
+    >
       <View style={styles.leadHeader}>
         <View style={styles.leadAvatar}>
           <Text style={styles.leadInitial}>{item.name[0].toUpperCase()}</Text>
@@ -96,12 +109,13 @@ export default function LeadsScreen() {
         <View style={styles.leadInfo}>
           <Text style={styles.leadName}>{item.name}</Text>
           <View style={styles.leadDetails}>
-            <Ionicons name="call" size={12} color="#6b7280" />
+            <Ionicons name="call" size={12} color={colors.textMuted} />
             <Text style={styles.leadDetail}>{item.phone}</Text>
+            <WhatsAppButton phone={item.phone} size={16} />
           </View>
           {item.email && (
             <View style={styles.leadDetails}>
-              <Ionicons name="mail" size={12} color="#6b7280" />
+              <Ionicons name="mail" size={12} color={colors.textMuted} />
               <Text style={styles.leadDetail}>{item.email}</Text>
             </View>
           )}
@@ -109,13 +123,20 @@ export default function LeadsScreen() {
       </View>
       <View style={styles.leadFooter}>
         <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.status] + '20' }]}>
+          <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[item.status] }]} />
           <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] }]}>
             {STATUS_LABELS[item.status]}
           </Text>
         </View>
         <View style={styles.interestBadge}>
-          <Ionicons name={item.interest_type === 'compra' ? 'cart' : 'key'} size={12} color="#6b7280" />
-          <Text style={styles.interestText}>{item.interest_type === 'compra' ? 'Compra' : 'Arriendo'}</Text>
+          <Ionicons 
+            name={item.interest_type === 'compra' ? 'cart' : 'key'} 
+            size={14} 
+            color={brandColors.leads} 
+          />
+          <Text style={styles.interestText}>
+            {item.interest_type === 'compra' ? 'Compra' : 'Arriendo'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -123,8 +144,8 @@ export default function LeadsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={brandColors.leads} />
       </View>
     );
   }
@@ -132,56 +153,88 @@ export default function LeadsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Leads</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/lead/add')}>
+        <View>
+          <Text style={styles.headerTitle}>Leads</Text>
+          <Text style={styles.headerSubtitle}>{leads.length} prospectos</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.addButton} 
+          onPress={() => router.push('/lead/add')}
+          activeOpacity={0.8}
+        >
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#9ca3af" style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar leads..."
+          placeholderTextColor={colors.textMuted}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
       </View>
 
-      <View style={styles.filterContainer}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        contentContainerStyle={styles.filterContainer}
+      >
         <TouchableOpacity
           style={[styles.filterChip, !filterStatus && styles.filterChipActive]}
           onPress={() => setFilterStatus(null)}
         >
-          <Text style={[styles.filterChipText, !filterStatus && styles.filterChipTextActive]}>Todos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterChip, filterStatus === 'nuevo' && styles.filterChipActive]}
-          onPress={() => setFilterStatus(filterStatus === 'nuevo' ? null : 'nuevo')}
-        >
-          <Text style={[styles.filterChipText, filterStatus === 'nuevo' && styles.filterChipTextActive]}>
-            Nuevos
+          <Text style={[styles.filterChipText, !filterStatus && styles.filterChipTextActive]}>
+            Todos
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterChip, filterStatus === 'contactado' && styles.filterChipActive]}
-          onPress={() => setFilterStatus(filterStatus === 'contactado' ? null : 'contactado')}
-        >
-          <Text style={[styles.filterChipText, filterStatus === 'contactado' && styles.filterChipTextActive]}>
-            Contactados
-          </Text>
-        </TouchableOpacity>
-      </View>
+        {Object.entries(STATUS_LABELS).map(([key, label]) => (
+          <TouchableOpacity
+            key={key}
+            style={[
+              styles.filterChip, 
+              filterStatus === key && { backgroundColor: STATUS_COLORS[key], borderColor: STATUS_COLORS[key] }
+            ]}
+            onPress={() => setFilterStatus(filterStatus === key ? null : key)}
+          >
+            <Text style={[
+              styles.filterChipText, 
+              filterStatus === key && styles.filterChipTextActive
+            ]}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       {filteredLeads.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="star-outline" size={64} color="#9ca3af" />
+          <View style={styles.emptyIconContainer}>
+            <Ionicons name="star-outline" size={48} color={brandColors.leads} />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {searchQuery || filterStatus ? 'Sin resultados' : 'Sin leads'}
+          </Text>
           <Text style={styles.emptyText}>
-            {searchQuery || filterStatus ? 'No se encontraron leads' : 'No hay leads registrados'}
+            {searchQuery || filterStatus 
+              ? 'No se encontraron leads con ese criterio' 
+              : 'Agrega tu primer lead para empezar'}
           </Text>
           {!searchQuery && !filterStatus && (
-            <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/lead/add')}>
-              <Text style={styles.emptyButtonText}>Agregar primer lead</Text>
+            <TouchableOpacity 
+              style={styles.emptyButton} 
+              onPress={() => router.push('/lead/add')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text style={styles.emptyButtonText}>Agregar Lead</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -189,8 +242,15 @@ export default function LeadsScreen() {
         <FlashList
           data={filteredLeads}
           renderItem={renderLead}
-          estimatedItemSize={120}
-          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+          estimatedItemSize={140}
+          refreshControl={
+            <RefreshControl 
+              refreshing={isRefreshing} 
+              onRefresh={handleRefresh}
+              tintColor={brandColors.leads}
+              colors={[brandColors.leads]}
+            />
+          }
           contentContainerStyle={styles.listContent}
         />
       )}
@@ -198,179 +258,221 @@ export default function LeadsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    paddingTop: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    height: 48,
-    fontSize: 16,
-    color: '#111827',
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  filterChipActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-  },
-  filterChipText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  filterChipTextActive: {
-    color: '#fff',
-  },
-  listContent: {
-    padding: 16,
-  },
-  leadCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  leadHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  leadAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#fef3c7',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  leadInitial: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#f59e0b',
-  },
-  leadInfo: {
-    flex: 1,
-  },
-  leadName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  leadDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  leadDetail: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginLeft: 4,
-  },
-  leadFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  interestBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  interestText: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 24,
-  },
-  emptyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: any, insets: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.md,
+      paddingTop: insets.top + spacing.sm,
+      paddingBottom: spacing.md,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 28,
+      color: colors.text,
+    },
+    headerSubtitle: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    addButton: {
+      backgroundColor: brandColors.leads,
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.md,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchIcon: {
+      marginRight: spacing.sm,
+    },
+    searchInput: {
+      flex: 1,
+      height: 48,
+      fontFamily: fonts.regular,
+      fontSize: 16,
+      color: colors.text,
+    },
+    filterContainer: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+      gap: spacing.sm,
+    },
+    filterChip: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: spacing.sm,
+    },
+    filterChipActive: {
+      backgroundColor: brandColors.leads,
+      borderColor: brandColors.leads,
+    },
+    filterChipText: {
+      fontFamily: fonts.medium,
+      fontSize: 13,
+      color: colors.textMuted,
+    },
+    filterChipTextActive: {
+      color: '#fff',
+    },
+    listContent: {
+      padding: spacing.md,
+    },
+    leadCard: {
+      backgroundColor: colors.surface,
+      padding: spacing.md,
+      borderRadius: borderRadius.lg,
+      marginBottom: spacing.sm,
+      ...shadows.sm,
+    },
+    leadHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    leadAvatar: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: brandColors.leadsLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    leadInitial: {
+      fontFamily: fonts.bold,
+      fontSize: 22,
+      color: brandColors.leads,
+    },
+    leadInfo: {
+      flex: 1,
+    },
+    leadName: {
+      fontFamily: fonts.semiBold,
+      fontSize: 16,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    leadDetails: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 3,
+      gap: 4,
+    },
+    leadDetail: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginRight: 6,
+    },
+    leadFooter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    statusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+      gap: 6,
+    },
+    statusDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    statusText: {
+      fontFamily: fonts.semiBold,
+      fontSize: 12,
+    },
+    interestBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: brandColors.leadsLight,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+      gap: 4,
+    },
+    interestText: {
+      fontFamily: fonts.medium,
+      fontSize: 12,
+      color: brandColors.leads,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+    },
+    emptyIconContainer: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: brandColors.leadsLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    emptyTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 20,
+      color: colors.text,
+      marginBottom: spacing.xs,
+    },
+    emptyText: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginBottom: spacing.lg,
+    },
+    emptyButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: brandColors.leads,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.md,
+      gap: spacing.xs,
+    },
+    emptyButtonText: {
+      fontFamily: fonts.semiBold,
+      color: '#fff',
+      fontSize: 16,
+    },
+  });

@@ -11,8 +11,11 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { propertiesAPI } from '../../src/api/client';
 import { Property } from '../../src/types';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { fonts, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
 
 const STATUS_COLORS: Record<string, string> = {
   disponible: '#10b981',
@@ -30,6 +33,8 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function PropertiesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,64 +92,69 @@ export default function PropertiesScreen() {
     }).format(price);
   };
 
+  const styles = createStyles(colors, insets);
+
   const renderProperty = ({ item }: { item: Property }) => (
-    <TouchableOpacity style={styles.propertyCard} onPress={() => router.push(`/property/${item.id}`)}>
-      {item.images && item.images.length > 0 ? (
-        <View style={styles.propertyImage}>
-          <Text style={styles.placeholderText}>Imagen</Text>
+    <TouchableOpacity 
+      style={styles.propertyCard} 
+      onPress={() => router.push(`/property/${item.id}`)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.propertyImagePlaceholder}>
+        <View style={styles.propertyIconContainer}>
+          <Ionicons name="business" size={32} color={brandColors.properties} />
         </View>
-      ) : (
-        <View style={styles.propertyImagePlaceholder}>
-          <Ionicons name="home" size={32} color="#9ca3af" />
+        <View style={[styles.statusBadgeFloat, { backgroundColor: STATUS_COLORS[item.status] }]}>
+          <Text style={styles.statusBadgeFloatText}>{STATUS_LABELS[item.status]}</Text>
         </View>
-      )}
+      </View>
       <View style={styles.propertyInfo}>
         <Text style={styles.propertyTitle} numberOfLines={1}>
           {item.title}
         </Text>
-        <View style={styles.propertyDetails}>
-          <Ionicons name="location" size={12} color="#6b7280" />
-          <Text style={styles.propertyDetail} numberOfLines={1}>
+        <View style={styles.propertyLocation}>
+          <Ionicons name="location" size={14} color={brandColors.properties} />
+          <Text style={styles.propertyLocationText} numberOfLines={1}>
             {item.address}, {item.city}
           </Text>
         </View>
         <Text style={styles.propertyPrice}>{formatPrice(item.price)}</Text>
+        
         <View style={styles.propertyFeatures}>
           {item.bedrooms !== null && item.bedrooms !== undefined && (
             <View style={styles.feature}>
-              <Ionicons name="bed" size={14} color="#6b7280" />
+              <Ionicons name="bed-outline" size={16} color={colors.textMuted} />
               <Text style={styles.featureText}>{item.bedrooms}</Text>
             </View>
           )}
           {item.bathrooms !== null && item.bathrooms !== undefined && (
             <View style={styles.feature}>
-              <Ionicons name="water" size={14} color="#6b7280" />
+              <Ionicons name="water-outline" size={16} color={colors.textMuted} />
               <Text style={styles.featureText}>{item.bathrooms}</Text>
             </View>
           )}
           {item.area_m2 && (
             <View style={styles.feature}>
-              <Ionicons name="expand" size={14} color="#6b7280" />
+              <Ionicons name="resize-outline" size={16} color={colors.textMuted} />
               <Text style={styles.featureText}>{item.area_m2}m²</Text>
             </View>
           )}
         </View>
-        <View style={styles.propertyFooter}>
-          <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.status] + '20' }]}>
-            <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] }]}>
-              {STATUS_LABELS[item.status]}
-            </Text>
+        
+        {item.client_name && (
+          <View style={styles.ownerContainer}>
+            <Ionicons name="person-circle-outline" size={16} color={colors.textMuted} />
+            <Text style={styles.ownerText}>Propietario: {item.client_name}</Text>
           </View>
-          <Text style={styles.ownerText}>{item.client_name}</Text>
-        </View>
+        )}
       </View>
     </TouchableOpacity>
   );
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={brandColors.properties} />
       </View>
     );
   }
@@ -152,31 +162,56 @@ export default function PropertiesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Propiedades</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/property/add')}>
+        <View>
+          <Text style={styles.headerTitle}>Inmuebles</Text>
+          <Text style={styles.headerSubtitle}>{properties.length} propiedades</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.addButton} 
+          onPress={() => router.push('/property/add')}
+          activeOpacity={0.8}
+        >
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#9ca3af" style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar propiedades..."
+          placeholderTextColor={colors.textMuted}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {filteredProperties.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="home-outline" size={64} color="#9ca3af" />
+          <View style={styles.emptyIconContainer}>
+            <Ionicons name="business-outline" size={48} color={brandColors.properties} />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {searchQuery ? 'Sin resultados' : 'Sin propiedades'}
+          </Text>
           <Text style={styles.emptyText}>
-            {searchQuery ? 'No se encontraron propiedades' : 'No hay propiedades registradas'}
+            {searchQuery 
+              ? 'No se encontraron propiedades con ese criterio' 
+              : 'Agrega tu primera propiedad para empezar'}
           </Text>
           {!searchQuery && (
-            <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/property/add')}>
-              <Text style={styles.emptyButtonText}>Agregar primera propiedad</Text>
+            <TouchableOpacity 
+              style={styles.emptyButton} 
+              onPress={() => router.push('/property/add')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text style={styles.emptyButtonText}>Agregar Propiedad</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -184,8 +219,15 @@ export default function PropertiesScreen() {
         <FlashList
           data={filteredProperties}
           renderItem={renderProperty}
-          estimatedItemSize={200}
-          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+          estimatedItemSize={280}
+          refreshControl={
+            <RefreshControl 
+              refreshing={isRefreshing} 
+              onRefresh={handleRefresh}
+              tintColor={brandColors.properties}
+              colors={[brandColors.properties]}
+            />
+          }
           contentContainerStyle={styles.listContent}
         />
       )}
@@ -193,168 +235,203 @@ export default function PropertiesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    paddingTop: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    height: 48,
-    fontSize: 16,
-    color: '#111827',
-  },
-  listContent: {
-    padding: 16,
-  },
-  propertyCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    overflow: 'hidden',
-  },
-  propertyImage: {
-    width: '100%',
-    height: 150,
-    backgroundColor: '#10b981',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  propertyImagePlaceholder: {
-    width: '100%',
-    height: 150,
-    backgroundColor: '#f3f4f6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  propertyInfo: {
-    padding: 16,
-  },
-  propertyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  propertyDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  propertyDetail: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginLeft: 4,
-    flex: 1,
-  },
-  propertyPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#10b981',
-    marginBottom: 12,
-  },
-  propertyFeatures: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 12,
-  },
-  feature: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  featureText: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  propertyFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  ownerText: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 24,
-  },
-  emptyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: any, insets: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.md,
+      paddingTop: insets.top + spacing.sm,
+      paddingBottom: spacing.md,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 28,
+      color: colors.text,
+    },
+    headerSubtitle: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    addButton: {
+      backgroundColor: brandColors.properties,
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.md,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      marginHorizontal: spacing.md,
+      marginVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchIcon: {
+      marginRight: spacing.sm,
+    },
+    searchInput: {
+      flex: 1,
+      height: 48,
+      fontFamily: fonts.regular,
+      fontSize: 16,
+      color: colors.text,
+    },
+    listContent: {
+      padding: spacing.md,
+    },
+    propertyCard: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      marginBottom: spacing.md,
+      overflow: 'hidden',
+      ...shadows.sm,
+    },
+    propertyImagePlaceholder: {
+      width: '100%',
+      height: 140,
+      backgroundColor: brandColors.propertiesLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+    },
+    propertyIconContainer: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    statusBadgeFloat: {
+      position: 'absolute',
+      top: spacing.sm,
+      right: spacing.sm,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+    },
+    statusBadgeFloatText: {
+      fontFamily: fonts.semiBold,
+      fontSize: 12,
+      color: '#fff',
+    },
+    propertyInfo: {
+      padding: spacing.md,
+    },
+    propertyTitle: {
+      fontFamily: fonts.semiBold,
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: 6,
+    },
+    propertyLocation: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+      gap: 4,
+    },
+    propertyLocationText: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+      flex: 1,
+    },
+    propertyPrice: {
+      fontFamily: fonts.bold,
+      fontSize: 22,
+      color: brandColors.properties,
+      marginBottom: spacing.sm,
+    },
+    propertyFeatures: {
+      flexDirection: 'row',
+      gap: spacing.md,
+      marginBottom: spacing.sm,
+      paddingTop: spacing.sm,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderLight,
+    },
+    feature: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    featureText: {
+      fontFamily: fonts.medium,
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    ownerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingTop: spacing.sm,
+    },
+    ownerText: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+    },
+    emptyIconContainer: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: brandColors.propertiesLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    emptyTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 20,
+      color: colors.text,
+      marginBottom: spacing.xs,
+    },
+    emptyText: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginBottom: spacing.lg,
+    },
+    emptyButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: brandColors.properties,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.md,
+      gap: spacing.xs,
+    },
+    emptyButtonText: {
+      fontFamily: fonts.semiBold,
+      color: '#fff',
+      fontSize: 16,
+    },
+  });
