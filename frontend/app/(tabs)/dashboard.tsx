@@ -7,17 +7,22 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { dashboardAPI, activitiesAPI } from '../../src/api/client';
 import { DashboardStats, Activity } from '../../src/types';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { fonts, typography, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { agent } = useAuth();
   const { colors } = useTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -33,7 +38,7 @@ export default function DashboardScreen() {
     try {
       const [statsData, activitiesData] = await Promise.all([
         dashboardAPI.getStats(),
-        activitiesAPI.getAll(20),
+        activitiesAPI.getAll(10),
       ]);
       setStats(statsData);
       setActivities(activitiesData);
@@ -53,26 +58,28 @@ export default function DashboardScreen() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'client_added':
-        return 'person-add';
+        return { name: 'person-add', color: brandColors.clients };
       case 'lead_added':
-        return 'star';
+        return { name: 'star', color: brandColors.leads };
       case 'property_added':
-        return 'home';
+        return { name: 'home', color: brandColors.properties };
       case 'appointment_created':
-        return 'calendar';
+        return { name: 'calendar', color: brandColors.calendar };
       case 'lead_status_changed':
-        return 'swap-horizontal';
+        return { name: 'swap-horizontal', color: brandColors.leads };
       case 'property_status_changed':
-        return 'swap-horizontal';
+        return { name: 'swap-horizontal', color: brandColors.properties };
       default:
-        return 'information-circle';
+        return { name: 'information-circle', color: colors.textMuted };
     }
   };
 
+  const styles = createStyles(colors, insets);
+
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={brandColors.primary} />
       </View>
     );
   }
@@ -80,75 +87,162 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.text }]}>Hola, {agent?.name}</Text>
-          <Text style={[styles.subGreeting, { color: colors.textMuted }]}>Bienvenido a tu CRM</Text>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Image
+            source={require('../../assets/images/logo-login.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.greeting}>Hola, {agent?.name?.split(' ')[0]}</Text>
+            <Text style={styles.subGreeting}>M&D Propiedades</Text>
+          </View>
         </View>
-        <TouchableOpacity onPress={() => router.push('/settings')} style={styles.settingsButton}>
+        <TouchableOpacity 
+          onPress={() => router.push('/settings')} 
+          style={styles.settingsButton}
+          activeOpacity={0.7}
+        >
           <Ionicons name="settings-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       <ScrollView
         style={styles.content}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isRefreshing} 
+            onRefresh={handleRefresh}
+            tintColor={brandColors.primary}
+            colors={[brandColors.primary]}
+          />
+        }
+        showsVerticalScrollIndicator={false}
       >
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statCard, { backgroundColor: '#dbeafe' }]}>
-            <Ionicons name="people" size={32} color="#3b82f6" />
-            <Text style={styles.statValue}>{stats?.total_clients || 0}</Text>
+        {/* Stats Cards */}
+        <View style={styles.statsContainer}>
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: brandColors.clientsLight }]}
+            onPress={() => router.push('/(tabs)/clients')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.statIconContainer, { backgroundColor: brandColors.clients }]}>
+              <Ionicons name="people" size={24} color="#fff" />
+            </View>
+            <Text style={[styles.statValue, { color: brandColors.clients }]}>
+              {stats?.total_clients || 0}
+            </Text>
             <Text style={styles.statLabel}>Clientes</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#fef3c7' }]}>
-            <Ionicons name="star" size={32} color="#f59e0b" />
-            <Text style={styles.statValue}>{stats?.total_leads || 0}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: brandColors.leadsLight }]}
+            onPress={() => router.push('/(tabs)/leads')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.statIconContainer, { backgroundColor: brandColors.leads }]}>
+              <Ionicons name="star" size={24} color="#fff" />
+            </View>
+            <Text style={[styles.statValue, { color: brandColors.leads }]}>
+              {stats?.total_leads || 0}
+            </Text>
             <Text style={styles.statLabel}>Leads</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#d1fae5' }]}>
-            <Ionicons name="home" size={32} color="#10b981" />
-            <Text style={styles.statValue}>{stats?.total_properties || 0}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: brandColors.propertiesLight }]}
+            onPress={() => router.push('/(tabs)/properties')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.statIconContainer, { backgroundColor: brandColors.properties }]}>
+              <Ionicons name="home" size={24} color="#fff" />
+            </View>
+            <Text style={[styles.statValue, { color: brandColors.properties }]}>
+              {stats?.total_properties || 0}
+            </Text>
             <Text style={styles.statLabel}>Propiedades</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#e0e7ff' }]}>
-            <Ionicons name="calendar" size={32} color="#6366f1" />
-            <Text style={styles.statValue}>{stats?.upcoming_appointments || 0}</Text>
-            <Text style={styles.statLabel}>Próximas Citas</Text>
-          </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.statCard, { backgroundColor: brandColors.calendarLight }]}
+            onPress={() => router.push('/(tabs)/calendar')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.statIconContainer, { backgroundColor: brandColors.calendar }]}>
+              <Ionicons name="calendar" size={24} color="#fff" />
+            </View>
+            <Text style={[styles.statValue, { color: brandColors.calendar }]}>
+              {stats?.upcoming_appointments || 0}
+            </Text>
+            <Text style={styles.statLabel}>Citas</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
-          <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/client/add')}>
-              <Ionicons name="person-add" size={28} color="#3b82f6" />
-              <Text style={styles.actionText}>Nuevo Cliente</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.actionsScrollContent}
+          >
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => router.push('/client/add')}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: brandColors.clientsLight }]}>
+                <Ionicons name="person-add" size={24} color={brandColors.clients} />
+              </View>
+              <Text style={styles.actionText}>Nuevo{'\n'}Cliente</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/lead/add')}>
-              <Ionicons name="star" size={28} color="#f59e0b" />
-              <Text style={styles.actionText}>Nuevo Lead</Text>
+
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => router.push('/lead/add')}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: brandColors.leadsLight }]}>
+                <Ionicons name="star" size={24} color={brandColors.leads} />
+              </View>
+              <Text style={styles.actionText}>Nuevo{'\n'}Lead</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/property/add')}>
-              <Ionicons name="home" size={28} color="#10b981" />
-              <Text style={styles.actionText}>Nueva Propiedad</Text>
+
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => router.push('/property/add')}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: brandColors.propertiesLight }]}>
+                <Ionicons name="home" size={24} color={brandColors.properties} />
+              </View>
+              <Text style={styles.actionText}>Nueva{'\n'}Propiedad</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/appointment/add')}>
-              <Ionicons name="calendar" size={28} color="#6366f1" />
-              <Text style={styles.actionText}>Nueva Cita</Text>
+
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => router.push('/appointment/add')}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: brandColors.calendarLight }]}>
+                <Ionicons name="calendar" size={24} color={brandColors.calendar} />
+              </View>
+              <Text style={styles.actionText}>Nueva{'\n'}Cita</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
 
-        {/* Buyer Reserve Quick Access */}
+        {/* Buyer Reserve Card */}
         <View style={styles.section}>
           <TouchableOpacity 
             style={styles.buyerReserveCard} 
             onPress={() => router.push('/buyer-reserve')}
+            activeOpacity={0.8}
           >
             <View style={styles.buyerReserveIcon}>
-              <Ionicons name="wallet" size={32} color="#fff" />
+              <Ionicons name="wallet" size={28} color="#fff" />
             </View>
             <View style={styles.buyerReserveContent}>
               <Text style={styles.buyerReserveTitle}>Compradores en Reserva</Text>
@@ -156,7 +250,9 @@ export default function DashboardScreen() {
                 Gestiona compradores con presupuesto disponible
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#10b981" />
+            <View style={styles.buyerReserveArrow}>
+              <Ionicons name="chevron-forward" size={20} color={brandColors.buyerReserve} />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -165,24 +261,38 @@ export default function DashboardScreen() {
           <Text style={styles.sectionTitle}>Actividad Reciente</Text>
           {activities.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="file-tray-outline" size={48} color="#9ca3af" />
+              <Ionicons name="file-tray-outline" size={48} color={colors.textMuted} />
               <Text style={styles.emptyText}>No hay actividades recientes</Text>
+              <Text style={styles.emptySubtext}>
+                Las actividades aparecerán aquí cuando agregues clientes, leads o propiedades
+              </Text>
             </View>
           ) : (
             <View style={styles.activityList}>
-              {activities.map((activity) => (
-                <View key={activity.id} style={styles.activityItem}>
-                  <View style={styles.activityIcon}>
-                    <Ionicons name={getActivityIcon(activity.type) as any} size={20} color="#3b82f6" />
+              {activities.slice(0, 5).map((activity, index) => {
+                const icon = getActivityIcon(activity.type);
+                return (
+                  <View 
+                    key={activity.id} 
+                    style={[
+                      styles.activityItem,
+                      index === activities.slice(0, 5).length - 1 && styles.activityItemLast
+                    ]}
+                  >
+                    <View style={[styles.activityIcon, { backgroundColor: icon.color + '20' }]}>
+                      <Ionicons name={icon.name as any} size={18} color={icon.color} />
+                    </View>
+                    <View style={styles.activityContent}>
+                      <Text style={styles.activityDescription} numberOfLines={2}>
+                        {activity.description}
+                      </Text>
+                      <Text style={styles.activityTime}>
+                        {format(new Date(activity.timestamp), "d 'de' MMMM, HH:mm", { locale: es })}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.activityContent}>
-                    <Text style={styles.activityDescription}>{activity.description}</Text>
-                    <Text style={styles.activityTime}>
-                      {format(new Date(activity.timestamp), "d 'de' MMMM, HH:mm")}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           )}
         </View>
@@ -191,166 +301,226 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    paddingTop: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  subGreeting: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
-  },
-  settingsButton: {
-    padding: 8,
-  },
-  content: {
-    flex: 1,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '47%',
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginTop: 8,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
-  },
-  section: {
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    minWidth: '47%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  actionText: {
-    fontSize: 14,
-    color: '#111827',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  activityList: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#dbeafe',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityDescription: {
-    fontSize: 14,
-    color: '#111827',
-    marginBottom: 4,
-  },
-  activityTime: {
-    fontSize: 12,
-    color: '#9ca3af',
-  },
-  emptyState: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9ca3af',
-    marginTop: 12,
-  },
-  buyerReserveCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0fdf4',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#86efac',
-  },
-  buyerReserveIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#10b981',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  buyerReserveContent: {
-    flex: 1,
-  },
-  buyerReserveTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  buyerReserveDescription: {
-    fontSize: 13,
-    color: '#6b7280',
-  },
-});
+const createStyles = (colors: any, insets: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingTop: insets.top + spacing.sm,
+      paddingBottom: spacing.md,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    logo: {
+      width: 40,
+      height: 40,
+      borderRadius: 8,
+    },
+    greeting: {
+      fontFamily: fonts.bold,
+      fontSize: 20,
+      color: colors.text,
+    },
+    subGreeting: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    settingsButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.surfaceSecondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    content: {
+      flex: 1,
+    },
+    contentContainer: {
+      paddingBottom: spacing.xl,
+    },
+    statsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      padding: spacing.md,
+      gap: spacing.sm,
+    },
+    statCard: {
+      flex: 1,
+      minWidth: '47%',
+      padding: spacing.md,
+      borderRadius: borderRadius.lg,
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+    statIconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    statValue: {
+      fontFamily: fonts.bold,
+      fontSize: 32,
+    },
+    statLabel: {
+      fontFamily: fonts.medium,
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginTop: 4,
+    },
+    section: {
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.md,
+    },
+    sectionTitle: {
+      fontFamily: fonts.bold,
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: spacing.md,
+    },
+    actionsScrollContent: {
+      gap: spacing.sm,
+    },
+    actionButton: {
+      alignItems: 'center',
+      width: 80,
+    },
+    actionIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: borderRadius.md,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+    },
+    actionText: {
+      fontFamily: fonts.medium,
+      fontSize: 12,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 16,
+    },
+    buyerReserveCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: brandColors.buyerReserveLight,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      borderWidth: 1,
+      borderColor: brandColors.buyerReserve + '40',
+    },
+    buyerReserveIcon: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: brandColors.buyerReserve,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    buyerReserveContent: {
+      flex: 1,
+    },
+    buyerReserveTitle: {
+      fontFamily: fonts.semiBold,
+      fontSize: 16,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    buyerReserveDescription: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+    },
+    buyerReserveArrow: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    activityList: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      ...shadows.sm,
+    },
+    activityItem: {
+      flexDirection: 'row',
+      paddingBottom: spacing.md,
+      marginBottom: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    activityItemLast: {
+      borderBottomWidth: 0,
+      marginBottom: 0,
+      paddingBottom: 0,
+    },
+    activityIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.sm,
+    },
+    activityContent: {
+      flex: 1,
+    },
+    activityDescription: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.text,
+      marginBottom: 4,
+      lineHeight: 20,
+    },
+    activityTime: {
+      fontFamily: fonts.regular,
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    emptyState: {
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+    emptyText: {
+      fontFamily: fonts.semiBold,
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: spacing.md,
+    },
+    emptySubtext: {
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginTop: spacing.xs,
+      lineHeight: 20,
+    },
+  });

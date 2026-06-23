@@ -1,28 +1,30 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { brandColors, fonts } from '../../src/theme';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#3b82f6',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: brandColors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.tabBar,
           borderTopWidth: 1,
-          borderTopColor: '#e5e7eb',
+          borderTopColor: colors.tabBarBorder,
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom + 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
+          fontFamily: fonts.medium,
+          fontSize: 11,
         },
       }}
     >
@@ -44,7 +46,7 @@ export default function TabsLayout() {
         name="leads"
         options={{
           title: 'Leads',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-add" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="star" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -57,7 +59,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="calendar"
         options={{
-          title: 'Calendario',
+          title: 'Agenda',
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
         }}
       />

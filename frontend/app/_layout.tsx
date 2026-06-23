@@ -5,12 +5,15 @@ import { ThemeProvider } from '../src/contexts/ThemeContext';
 import { RegionProvider } from '../src/contexts/RegionContext';
 import { Asset } from 'expo-asset';
 import * as SplashScreen from 'expo-splash-screen';
+import { useMontserratFonts } from '../src/theme/fonts';
+import { View, ActivityIndicator } from 'react-native';
 
 // Prevent auto-hiding of splash screen
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = React.useState(false);
+  const { fontsLoaded, fontError } = useMontserratFonts();
 
   React.useEffect(() => {
     async function prepare() {
@@ -33,13 +36,21 @@ export default function RootLayout() {
   }, []);
 
   React.useEffect(() => {
-    if (appIsReady) {
+    if (appIsReady && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [appIsReady]);
+  }, [appIsReady, fontsLoaded]);
 
-  if (!appIsReady) {
-    return null;
+  if (!appIsReady || !fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#dc2626" />
+      </View>
+    );
+  }
+
+  if (fontError) {
+    console.error('Font loading error:', fontError);
   }
 
   return (

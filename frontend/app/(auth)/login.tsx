@@ -12,12 +12,17 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { fonts, brandColors, spacing, borderRadius } from '../../src/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { login } = useAuth();
+  const { colors } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,28 +45,38 @@ export default function LoginScreen() {
     }
   };
 
+  const styles = createStyles(colors, insets);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
           <Image 
             source={require('../../assets/images/logo-login.png')} 
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.title}>M&D Propiedades - CRM</Text>
+          <Text style={styles.title}>M&D Propiedades</Text>
+          <Text style={styles.brandText}>CRM</Text>
           <Text style={styles.subtitle}>Inicia sesión en tu cuenta</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Ionicons name="mail" size={20} color="#6b7280" style={styles.inputIcon} />
+            <View style={styles.inputIconContainer}>
+              <Ionicons name="mail" size={20} color={brandColors.primary} />
+            </View>
             <TextInput
               style={styles.input}
               placeholder="Email"
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -71,17 +86,27 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed" size={20} color="#6b7280" style={styles.inputIcon} />
+            <View style={styles.inputIconContainer}>
+              <Ionicons name="lock-closed" size={20} color={brandColors.primary} />
+            </View>
             <TextInput
               style={styles.input}
               placeholder="Contraseña"
+              placeholderTextColor={colors.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               editable={!isLoading}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#6b7280" />
+            <TouchableOpacity 
+              onPress={() => setShowPassword(!showPassword)} 
+              style={styles.eyeButton}
+            >
+              <Ionicons 
+                name={showPassword ? 'eye-off' : 'eye'} 
+                size={20} 
+                color={colors.textMuted} 
+              />
             </TouchableOpacity>
           </View>
 
@@ -89,11 +114,18 @@ export default function LoginScreen() {
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={isLoading}
+            activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>
               {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Text>
           </TouchableOpacity>
+
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>o</Text>
+            <View style={styles.divider} />
+          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>¿No tienes cuenta? </Text>
@@ -102,95 +134,135 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        <Text style={styles.versionText}>Versión 1.0.0</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  logo: {
-    width: 125,
-    height: 125,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginTop: 8,
-  },
-  form: {
-    width: '100%',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    height: 56,
-    fontSize: 16,
-    color: '#111827',
-  },
-  eyeIcon: {
-    padding: 8,
-  },
-  button: {
-    backgroundColor: '#3b82f6',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    backgroundColor: '#93c5fd',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  link: {
-    fontSize: 14,
-    color: '#3b82f6',
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: any, insets: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: spacing.lg,
+      paddingTop: insets.top + spacing.xl,
+      paddingBottom: insets.bottom + spacing.lg,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+    },
+    logo: {
+      width: 100,
+      height: 100,
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontFamily: fonts.bold,
+      fontSize: 28,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    brandText: {
+      fontFamily: fonts.bold,
+      fontSize: 18,
+      color: brandColors.primary,
+      marginTop: 4,
+    },
+    subtitle: {
+      fontFamily: fonts.regular,
+      fontSize: 15,
+      color: colors.textMuted,
+      marginTop: spacing.sm,
+    },
+    form: {
+      width: '100%',
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    inputIconContainer: {
+      width: 52,
+      height: 56,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.surfaceSecondary,
+    },
+    input: {
+      flex: 1,
+      height: 56,
+      paddingHorizontal: spacing.md,
+      fontFamily: fonts.regular,
+      fontSize: 16,
+      color: colors.text,
+    },
+    eyeButton: {
+      padding: spacing.md,
+    },
+    button: {
+      backgroundColor: brandColors.primary,
+      borderRadius: borderRadius.md,
+      height: 56,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: spacing.sm,
+    },
+    buttonDisabled: {
+      backgroundColor: brandColors.primary + '80',
+    },
+    buttonText: {
+      fontFamily: fonts.semiBold,
+      color: '#fff',
+      fontSize: 16,
+    },
+    dividerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: spacing.lg,
+    },
+    divider: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    dividerText: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+      paddingHorizontal: spacing.md,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    footerText: {
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    link: {
+      fontFamily: fonts.semiBold,
+      fontSize: 14,
+      color: brandColors.primary,
+    },
+    versionText: {
+      fontFamily: fonts.regular,
+      fontSize: 12,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginTop: spacing.xl,
+    },
+  });
