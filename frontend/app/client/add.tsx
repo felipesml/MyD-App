@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { clientsAPI } from '../../src/api/client';
+import WhatsAppButton from '../../src/components/WhatsAppButton';
 
 export default function AddClientScreen() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function AddClientScreen() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [nationality, setNationality] = useState('');
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,6 +38,7 @@ export default function AddClientScreen() {
         email: email.trim() || undefined,
         phone: phone.trim(),
         address: address.trim() || undefined,
+        nationality: nationality.trim() || undefined,
         notes: notes.trim() || undefined,
       });
 
@@ -87,15 +90,32 @@ export default function AddClientScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Teléfono <Text style={styles.required}>*</Text>
-            </Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>
+                Teléfono <Text style={styles.required}>*</Text>
+              </Text>
+              <WhatsAppButton phone={phone} size={20} disabled={!phone.trim()} />
+            </View>
             <TextInput
               style={styles.input}
-              placeholder="+56 9 1234 5678"
+              placeholder="+56912345678"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
+              editable={!isLoading}
+            />
+            <Text style={styles.helperText}>
+              Formato: +56912345678 (sin espacios ni guiones)
+            </Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Nacionalidad</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Chilena"
+              value={nationality}
+              onChangeText={setNationality}
               editable={!isLoading}
             />
           </View>
@@ -172,6 +192,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
   },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   required: {
     color: '#ef4444',
   },
@@ -188,6 +213,11 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     paddingTop: 12,
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
   },
   buttons: {
     flexDirection: 'row',
