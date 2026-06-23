@@ -121,6 +121,7 @@ class ClientResponse(BaseModel):
     email: Optional[str] = None
     phone: str
     address: Optional[str] = None
+    nationality: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
     properties_count: Optional[int] = 0
@@ -370,6 +371,7 @@ async def create_client(client_data: ClientCreate, agent = Depends(get_current_a
         "email": client_data.email,
         "phone": client_data.phone,
         "address": client_data.address,
+        "nationality": client_data.nationality,
         "notes": client_data.notes,
         "created_at": datetime.utcnow()
     }
