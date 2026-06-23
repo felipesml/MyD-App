@@ -330,7 +330,7 @@ export default function AddPropertyScreen() {
               <Text style={styles.label}>Dormitorios</Text>
               <TextInput
                 style={styles.input}
-                placeholder="3"
+                placeholder=""
                 value={bedrooms}
                 onChangeText={setBedrooms}
                 keyboardType="numeric"
@@ -342,7 +342,7 @@ export default function AddPropertyScreen() {
               <Text style={styles.label}>Baños</Text>
               <TextInput
                 style={styles.input}
-                placeholder="2"
+                placeholder=""
                 value={bathrooms}
                 onChangeText={setBathrooms}
                 keyboardType="numeric"
@@ -356,7 +356,7 @@ export default function AddPropertyScreen() {
               <Text style={styles.label}>Área (m²)</Text>
               <TextInput
                 style={styles.input}
-                placeholder="120"
+                placeholder=""
                 value={areaM2}
                 onChangeText={setAreaM2}
                 keyboardType="numeric"
@@ -368,7 +368,7 @@ export default function AddPropertyScreen() {
               <Text style={styles.label}>Estacionamientos</Text>
               <TextInput
                 style={styles.input}
-                placeholder="2"
+                placeholder=""
                 value={parkingSpots}
                 onChangeText={setParkingSpots}
                 keyboardType="numeric"
