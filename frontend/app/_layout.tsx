@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 import { AuthProvider } from '../src/contexts/AuthContext';
+import { ThemeProvider } from '../src/contexts/ThemeContext';
+import { RegionProvider } from '../src/contexts/RegionContext';
 import { Asset } from 'expo-asset';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -15,9 +17,9 @@ export default function RootLayout() {
       try {
         // Pre-warm the icon assets
         const iconAssets = [
-          require('../assets/icon.png'),
-          require('../assets/adaptive-icon.png'),
-          require('../assets/favicon.png'),
+          require('../assets/images/icon.png'),
+          require('../assets/images/adaptive-icon.png'),
+          require('../assets/images/favicon.png'),
         ];
         await Asset.loadAsync(iconAssets);
       } catch (e) {
@@ -41,16 +43,22 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="client" />
-        <Stack.Screen name="lead" />
-        <Stack.Screen name="property" />
-        <Stack.Screen name="appointment" />
-      </Stack>
-    </AuthProvider>
+    <ThemeProvider>
+      <RegionProvider>
+        <AuthProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="client" />
+            <Stack.Screen name="lead" />
+            <Stack.Screen name="property" />
+            <Stack.Screen name="appointment" />
+            <Stack.Screen name="buyer-reserve" />
+            <Stack.Screen name="settings" />
+          </Stack>
+        </AuthProvider>
+      </RegionProvider>
+    </ThemeProvider>
   );
 }

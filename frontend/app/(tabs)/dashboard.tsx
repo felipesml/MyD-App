@@ -11,13 +11,15 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { dashboardAPI, activitiesAPI } from '../../src/api/client';
 import { DashboardStats, Activity } from '../../src/types';
 import { format } from 'date-fns';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { agent, logout } = useAuth();
+  const { agent } = useAuth();
+  const { colors } = useTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,11 +48,6 @@ export default function DashboardScreen() {
   const handleRefresh = () => {
     setIsRefreshing(true);
     loadData();
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/login');
   };
 
   const getActivityIcon = (type: string) => {
@@ -83,13 +80,13 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <View>
-          <Text style={styles.greeting}>Hola, {agent?.name}</Text>
-          <Text style={styles.subGreeting}>Bienvenido a tu CRM</Text>
+          <Text style={[styles.greeting, { color: colors.text }]}>Hola, {agent?.name}</Text>
+          <Text style={[styles.subGreeting, { color: colors.textMuted }]}>Bienvenido a tu CRM</Text>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color="#ef4444" />
+        <TouchableOpacity onPress={() => router.push('/settings')} style={styles.settingsButton}>
+          <Ionicons name="settings-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -224,7 +221,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginTop: 4,
   },
-  logoutButton: {
+  settingsButton: {
     padding: 8,
   },
   content: {
