@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { leadsAPI } from '../../src/api/client';
+import WhatsAppButton from '../../src/components/WhatsAppButton';
 
 export default function AddLeadScreen() {
   const router = useRouter();
@@ -93,17 +94,23 @@ export default function AddLeadScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
-              Teléfono <Text style={styles.required}>*</Text>
-            </Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>
+                Teléfono <Text style={styles.required}>*</Text>
+              </Text>
+              <WhatsAppButton phone={phone} size={20} disabled={!phone.trim()} />
+            </View>
             <TextInput
               style={styles.input}
-              placeholder="+56 9 1234 5678"
+              placeholder="+56912345678"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
               editable={!isLoading}
             />
+            <Text style={styles.helperText}>
+              Formato: +56912345678 (sin espacios ni guiones)
+            </Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -248,8 +255,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
   },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   required: {
     color: '#ef4444',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
   },
   input: {
     backgroundColor: '#fff',
