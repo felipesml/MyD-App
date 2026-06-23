@@ -152,6 +152,27 @@ class LeadResponse(BaseModel):
     last_contact_date: Optional[datetime] = None
     interested_properties: Optional[List[str]] = []
 
+class BuyerReserveCreate(BaseModel):
+    first_name: str
+    last_name: str
+    phone: str
+    email: Optional[str] = None
+    budget: float
+    payment_method: str  # "contado" | "credito" | "leasing" | "otro"
+    notes: Optional[str] = None
+
+class BuyerReserveResponse(BaseModel):
+    id: str
+    agent_id: str
+    first_name: str
+    last_name: str
+    phone: str
+    email: Optional[str] = None
+    budget: float
+    payment_method: str
+    notes: Optional[str] = None
+    created_at: datetime
+
 class PropertyCreate(BaseModel):
     client_id: str
     title: str
@@ -692,6 +713,170 @@ async def delete_lead(lead_id: str, agent = Depends(get_current_agent)):
     )
     
     return {"message": "Lead deleted successfully"}
+
+
+# ==================== BUYER RESERVES ROUTES ====================
+
+@api_router.get("/buyer-reserves", response_model=List[BuyerReserveResponse])
+async def get_buyer_reserves(agent = Depends(get_current_agent)):
+    """Get all buyer reserves for the current agent"""
+    agent_id = str(agent["_id"])
+    buyer_reserves = await db.buyer_reserves.find({"agent_id": agent_id}).to_list(1000)
+    
+    return [BuyerReserveResponse(
+        id=str(br["_id"]),
+        agent_id=br["agent_id"],
+        first_name=br["first_name"],
+        last_name=br["last_name"],
+        phone=br["phone"],
+        email=br.get("email"),
+        budget=br["budget"],
+        payment_method=br["payment_method"],
+        notes=br.get("notes"),
+        created_at=br["created_at"]
+    ) for br in buyer_reserves]
+
+@api_router.post("/buyer-reserves", response_model=BuyerReserveResponse)
+async def create_buyer_reserve(buyer_reserve_data: BuyerReserveCreate, agent = Depends(get_current_agent)):
+    """Create a new buyer reserve"""
+    agent_id = str(agent["_id"])
+    
+    buyer_reserve_dict = {
+        "agent_id": agent_id,
+        "first_name": buyer_reserve_data.first_name,
+        "last_name": buyer_reserve_data.last_name,
+        "phone": buyer_reserve_data.phone,
+        "email": buyer_reserve_data.email,
+        "budget": buyer_reserve_data.budget,
+        "payment_method": buyer_reserve_data.payment_method,
+        "notes": buyer_reserve_data.notes,
+        "created_at": datetime.utcnow()
+    }
+    
+    result = await db.buyer_reserves.insert_one(buyer_reserve_dict)
+    buyer_reserve_dict["_id"] = result.inserted_id
+    
+    # Create activity
+    await create_activity(
+        agent_id=agent_id,
+        activity_type="buyer_reserve_added",
+        description=f"Nuevo comprador en reserva agregado: {buyer_reserve_data.first_name} {buyer_reserve_data.last_name}",
+        related_entity="buyer_reserve",
+        related_id=str(result.inserted_id)
+    )
+    
+    return BuyerReserveResponse(
+        id=str(result.inserted_id),
+        agent_id=agent_id,
+        first_name=buyer_reserve_dict["first_name"],
+        last_name=buyer_reserve_dict["last_name"],
+        phone=buyer_reserve_dict["phone"],
+        email=buyer_reserve_dict.get("email"),
+        budget=buyer_reserve_dict["budget"],
+        payment_method=buyer_reserve_dict["payment_method"],
+        notes=buyer_reserve_dict.get("notes"),
+        created_at=buyer_reserve_dict["created_at"]
+    )
+
+@api_router.get("/buyer-reserves/{buyer_reserve_id}", response_model=BuyerReserveResponse)
+async def get_buyer_reserve(buyer_reserve_id: str, agent = Depends(get_current_agent)):
+    """Get a specific buyer reserve"""
+    agent_id = str(agent["_id"])
+    
+    try:
+        buyer_reserve = await db.buyer_reserves.find_one({"_id": ObjectId(buyer_reserve_id), "agent_id": agent_id})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid buyer reserve ID")
+    
+    if not buyer_reserve:
+        raise HTTPException(status_code=404, detail="Buyer reserve not found")
+    
+    return BuyerReserveResponse(
+        id=str(buyer_reserve["_id"]),
+        agent_id=buyer_reserve["agent_id"],
+        first_name=buyer_reserve["first_name"],
+        last_name=buyer_reserve["last_name"],
+        phone=buyer_reserve["phone"],
+        email=buyer_reserve.get("email"),
+        budget=buyer_reserve["budget"],
+        payment_method=buyer_reserve["payment_method"],
+        notes=buyer_reserve.get("notes"),
+        created_at=buyer_reserve["created_at"]
+    )
+
+@api_router.put("/buyer-reserves/{buyer_reserve_id}", response_model=BuyerReserveResponse)
+async def update_buyer_reserve(buyer_reserve_id: str, buyer_reserve_data: BuyerReserveCreate, agent = Depends(get_current_agent)):
+    """Update a buyer reserve"""
+    agent_id = str(agent["_id"])
+    
+    try:
+        buyer_reserve = await db.buyer_reserves.find_one({"_id": ObjectId(buyer_reserve_id), "agent_id": agent_id})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid buyer reserve ID")
+    
+    if not buyer_reserve:
+        raise HTTPException(status_code=404, detail="Buyer reserve not found")
+    
+    update_dict = {
+        "first_name": buyer_reserve_data.first_name,
+        "last_name": buyer_reserve_data.last_name,
+        "phone": buyer_reserve_data.phone,
+        "email": buyer_reserve_data.email,
+        "budget": buyer_reserve_data.budget,
+        "payment_method": buyer_reserve_data.payment_method,
+        "notes": buyer_reserve_data.notes
+    }
+    
+    await db.buyer_reserves.update_one(
+        {"_id": ObjectId(buyer_reserve_id)},
+        {"$set": update_dict}
+    )
+    
+    # Create activity
+    await create_activity(
+        agent_id=agent_id,
+        activity_type="buyer_reserve_updated",
+        description=f"Comprador en reserva actualizado: {buyer_reserve_data.first_name} {buyer_reserve_data.last_name}",
+        related_entity="buyer_reserve",
+        related_id=buyer_reserve_id
+    )
+    
+    return BuyerReserveResponse(
+        id=buyer_reserve_id,
+        agent_id=agent_id,
+        first_name=update_dict["first_name"],
+        last_name=update_dict["last_name"],
+        phone=update_dict["phone"],
+        email=update_dict.get("email"),
+        budget=update_dict["budget"],
+        payment_method=update_dict["payment_method"],
+        notes=update_dict.get("notes"),
+        created_at=buyer_reserve["created_at"]
+    )
+
+@api_router.delete("/buyer-reserves/{buyer_reserve_id}")
+async def delete_buyer_reserve(buyer_reserve_id: str, agent = Depends(get_current_agent)):
+    """Delete a buyer reserve"""
+    agent_id = str(agent["_id"])
+    
+    try:
+        buyer_reserve = await db.buyer_reserves.find_one({"_id": ObjectId(buyer_reserve_id), "agent_id": agent_id})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid buyer reserve ID")
+    
+    if not buyer_reserve:
+        raise HTTPException(status_code=404, detail="Buyer reserve not found")
+    
+    await db.buyer_reserves.delete_one({"_id": ObjectId(buyer_reserve_id)})
+    
+    # Create activity
+    await create_activity(
+        agent_id=agent_id,
+        activity_type="buyer_reserve_deleted",
+        description=f"Comprador en reserva eliminado: {buyer_reserve['first_name']} {buyer_reserve['last_name']}"
+    )
+    
+    return {"message": "Buyer reserve deleted successfully"}
 
 
 # ==================== PROPERTIES ROUTES ====================
