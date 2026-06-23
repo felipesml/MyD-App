@@ -111,6 +111,7 @@ class ClientCreate(BaseModel):
     email: Optional[str] = None
     phone: str
     address: Optional[str] = None
+    nationality: Optional[str] = None
     notes: Optional[str] = None
 
 class ClientResponse(BaseModel):
