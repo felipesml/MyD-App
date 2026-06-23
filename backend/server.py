@@ -531,7 +531,8 @@ async def get_leads(agent = Depends(get_current_agent)):
         source=lead["source"],
         notes=lead.get("notes"),
         created_at=lead["created_at"],
-        last_contact_date=lead.get("last_contact_date")
+        last_contact_date=lead.get("last_contact_date"),
+        interested_properties=lead.get("interested_properties", [])
     ) for lead in leads]
 
 @api_router.post("/leads", response_model=LeadResponse)
@@ -549,6 +550,7 @@ async def create_lead(lead_data: LeadCreate, agent = Depends(get_current_agent))
         "status": lead_data.status,
         "source": lead_data.source,
         "notes": lead_data.notes,
+        "interested_properties": lead_data.interested_properties or [],
         "created_at": datetime.utcnow(),
         "last_contact_date": None
     }
@@ -577,7 +579,8 @@ async def create_lead(lead_data: LeadCreate, agent = Depends(get_current_agent))
         source=lead_dict["source"],
         notes=lead_dict.get("notes"),
         created_at=lead_dict["created_at"],
-        last_contact_date=lead_dict.get("last_contact_date")
+        last_contact_date=lead_dict.get("last_contact_date"),
+        interested_properties=lead_dict.get("interested_properties", [])
     )
 
 @api_router.get("/leads/{lead_id}", response_model=LeadResponse)
@@ -605,7 +608,8 @@ async def get_lead(lead_id: str, agent = Depends(get_current_agent)):
         source=lead["source"],
         notes=lead.get("notes"),
         created_at=lead["created_at"],
-        last_contact_date=lead.get("last_contact_date")
+        last_contact_date=lead.get("last_contact_date"),
+        interested_properties=lead.get("interested_properties", [])
     )
 
 @api_router.put("/leads/{lead_id}", response_model=LeadResponse)
@@ -630,6 +634,7 @@ async def update_lead(lead_id: str, lead_data: LeadCreate, agent = Depends(get_c
         "status": lead_data.status,
         "source": lead_data.source,
         "notes": lead_data.notes,
+        "interested_properties": lead_data.interested_properties or [],
         "last_contact_date": datetime.utcnow()
     }
     
@@ -660,7 +665,8 @@ async def update_lead(lead_id: str, lead_data: LeadCreate, agent = Depends(get_c
         source=update_dict["source"],
         notes=update_dict.get("notes"),
         created_at=lead["created_at"],
-        last_contact_date=update_dict["last_contact_date"]
+        last_contact_date=update_dict["last_contact_date"],
+        interested_properties=update_dict.get("interested_properties", [])
     )
 
 @api_router.delete("/leads/{lead_id}")
