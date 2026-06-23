@@ -20,11 +20,36 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { fonts, typography, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
 
+// Dynamic colors for dark mode support
+const getStatCardColors = (isDark: boolean) => ({
+  clients: {
+    bg: isDark ? '#1e3a5f' : '#dbeafe',
+    text: isDark ? '#60a5fa' : '#3b82f6',
+  },
+  leads: {
+    bg: isDark ? '#451a03' : '#fef3c7',
+    text: isDark ? '#fbbf24' : '#f59e0b',
+  },
+  properties: {
+    bg: isDark ? '#064e3b' : '#d1fae5',
+    text: isDark ? '#34d399' : '#10b981',
+  },
+  calendar: {
+    bg: isDark ? '#4c1d95' : '#ede9fe',
+    text: isDark ? '#a78bfa' : '#8b5cf6',
+  },
+  buyerReserve: {
+    bg: isDark ? '#134e4a' : '#ccfbf1',
+    text: isDark ? '#2dd4bf' : '#14b8a6',
+  },
+});
+
 export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { agent } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const statCardColors = getStatCardColors(isDark);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);

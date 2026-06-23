@@ -113,7 +113,6 @@ export default function AddClientScreen() {
             <Text style={styles.label}>Nacionalidad</Text>
             <TextInput
               style={styles.input}
-              placeholder="Chilena"
               value={nationality}
               onChangeText={setNationality}
               editable={!isLoading}
