@@ -144,6 +144,25 @@ export default function DashboardScreen() {
           </View>
         </View>
 
+        {/* Buyer Reserve Quick Access */}
+        <View style={styles.section}>
+          <TouchableOpacity 
+            style={styles.buyerReserveCard} 
+            onPress={() => router.push('/buyer-reserve')}
+          >
+            <View style={styles.buyerReserveIcon}>
+              <Ionicons name="wallet" size={32} color="#fff" />
+            </View>
+            <View style={styles.buyerReserveContent}>
+              <Text style={styles.buyerReserveTitle}>Compradores en Reserva</Text>
+              <Text style={styles.buyerReserveDescription}>
+                Gestiona compradores con presupuesto disponible
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#10b981" />
+          </TouchableOpacity>
+        </View>
+
         {/* Recent Activity */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Actividad Reciente</Text>
@@ -305,5 +324,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af',
     marginTop: 12,
+  },
+  buyerReserveCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  buyerReserveIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#10b981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  buyerReserveContent: {
+    flex: 1,
+  },
+  buyerReserveTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  buyerReserveDescription: {
+    fontSize: 13,
+    color: '#6b7280',
   },
 });
