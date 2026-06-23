@@ -353,6 +353,7 @@ async def get_clients(agent = Depends(get_current_agent)):
             email=client.get("email"),
             phone=client["phone"],
             address=client.get("address"),
+            nationality=client.get("nationality"),
             notes=client.get("notes"),
             created_at=client["created_at"],
             properties_count=properties_count
@@ -395,6 +396,7 @@ async def create_client(client_data: ClientCreate, agent = Depends(get_current_a
         email=client_dict.get("email"),
         phone=client_dict["phone"],
         address=client_dict.get("address"),
+        nationality=client_dict.get("nationality"),
         notes=client_dict.get("notes"),
         created_at=client_dict["created_at"],
         properties_count=0
@@ -422,6 +424,7 @@ async def get_client(client_id: str, agent = Depends(get_current_agent)):
         email=client.get("email"),
         phone=client["phone"],
         address=client.get("address"),
+        nationality=client.get("nationality"),
         notes=client.get("notes"),
         created_at=client["created_at"],
         properties_count=properties_count
@@ -445,6 +448,7 @@ async def update_client(client_id: str, client_data: ClientCreate, agent = Depen
         "email": client_data.email,
         "phone": client_data.phone,
         "address": client_data.address,
+        "nationality": client_data.nationality,
         "notes": client_data.notes
     }
     
@@ -471,6 +475,7 @@ async def update_client(client_id: str, client_data: ClientCreate, agent = Depen
         email=update_dict.get("email"),
         phone=update_dict["phone"],
         address=update_dict.get("address"),
+        nationality=update_dict.get("nationality"),
         notes=update_dict.get("notes"),
         created_at=client["created_at"],
         properties_count=properties_count
