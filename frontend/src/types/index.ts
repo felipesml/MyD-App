@@ -19,6 +19,7 @@ export interface Client {
   email?: string;
   phone: string;
   address?: string;
+  nationality?: string;
   notes?: string;
   created_at: string;
   properties_count?: number;
@@ -37,6 +38,20 @@ export interface Lead {
   notes?: string;
   created_at: string;
   last_contact_date?: string;
+  interested_properties?: string[];
+}
+
+export interface BuyerReserve {
+  id: string;
+  agent_id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email?: string;
+  budget: number;
+  payment_method: 'contado' | 'credito' | 'leasing' | 'otro';
+  notes?: string;
+  created_at: string;
 }
 
 export interface Property {

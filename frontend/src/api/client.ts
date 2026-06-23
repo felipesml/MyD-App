@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Agent, AuthResponse, Client, Lead, Property, Appointment, Activity, DashboardStats } from '../types';
+import { Agent, AuthResponse, Client, Lead, Property, Appointment, Activity, DashboardStats, BuyerReserve } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
