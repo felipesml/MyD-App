@@ -149,59 +149,59 @@ export default function DashboardScreen() {
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: brandColors.clientsLight }]}
+            style={[styles.statCard, { backgroundColor: statCardColors.clients.bg }]}
             onPress={() => router.push('/(tabs)/clients')}
             activeOpacity={0.8}
           >
-            <View style={[styles.statIconContainer, { backgroundColor: brandColors.clients }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.clients.text }]}>
               <Ionicons name="people" size={24} color="#fff" />
             </View>
-            <Text style={[styles.statValue, { color: brandColors.clients }]}>
+            <Text style={[styles.statValue, { color: statCardColors.clients.text }]}>
               {stats?.total_clients || 0}
             </Text>
-            <Text style={styles.statLabel}>Clientes</Text>
+            <Text style={[styles.statLabel, { color: statCardColors.clients.text }]}>Clientes</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: brandColors.leadsLight }]}
+            style={[styles.statCard, { backgroundColor: statCardColors.leads.bg }]}
             onPress={() => router.push('/(tabs)/leads')}
             activeOpacity={0.8}
           >
-            <View style={[styles.statIconContainer, { backgroundColor: brandColors.leads }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.leads.text }]}>
               <Ionicons name="star" size={24} color="#fff" />
             </View>
-            <Text style={[styles.statValue, { color: brandColors.leads }]}>
+            <Text style={[styles.statValue, { color: statCardColors.leads.text }]}>
               {stats?.total_leads || 0}
             </Text>
-            <Text style={styles.statLabel}>Leads</Text>
+            <Text style={[styles.statLabel, { color: statCardColors.leads.text }]}>Leads</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: brandColors.propertiesLight }]}
+            style={[styles.statCard, { backgroundColor: statCardColors.properties.bg }]}
             onPress={() => router.push('/(tabs)/properties')}
             activeOpacity={0.8}
           >
-            <View style={[styles.statIconContainer, { backgroundColor: brandColors.properties }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.properties.text }]}>
               <Ionicons name="home" size={24} color="#fff" />
             </View>
-            <Text style={[styles.statValue, { color: brandColors.properties }]}>
+            <Text style={[styles.statValue, { color: statCardColors.properties.text }]}>
               {stats?.total_properties || 0}
             </Text>
-            <Text style={styles.statLabel}>Propiedades</Text>
+            <Text style={[styles.statLabel, { color: statCardColors.properties.text }]}>Propiedades</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: brandColors.calendarLight }]}
+            style={[styles.statCard, { backgroundColor: statCardColors.calendar.bg }]}
             onPress={() => router.push('/(tabs)/calendar')}
             activeOpacity={0.8}
           >
-            <View style={[styles.statIconContainer, { backgroundColor: brandColors.calendar }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.calendar.text }]}>
               <Ionicons name="calendar" size={24} color="#fff" />
             </View>
-            <Text style={[styles.statValue, { color: brandColors.calendar }]}>
+            <Text style={[styles.statValue, { color: statCardColors.calendar.text }]}>
               {stats?.upcoming_appointments || 0}
             </Text>
-            <Text style={styles.statLabel}>Citas</Text>
+            <Text style={[styles.statLabel, { color: statCardColors.calendar.text }]}>Citas</Text>
           </TouchableOpacity>
         </View>
 
@@ -218,8 +218,8 @@ export default function DashboardScreen() {
               onPress={() => router.push('/client/add')}
               activeOpacity={0.7}
             >
-              <View style={[styles.actionIcon, { backgroundColor: brandColors.clientsLight }]}>
-                <Ionicons name="person-add" size={24} color={brandColors.clients} />
+              <View style={[styles.actionIcon, { backgroundColor: statCardColors.clients.bg }]}>
+                <Ionicons name="person-add" size={24} color={statCardColors.clients.text} />
               </View>
               <Text style={styles.actionText}>Nuevo{'\n'}Cliente</Text>
             </TouchableOpacity>
@@ -229,8 +229,8 @@ export default function DashboardScreen() {
               onPress={() => router.push('/lead/add')}
               activeOpacity={0.7}
             >
-              <View style={[styles.actionIcon, { backgroundColor: brandColors.leadsLight }]}>
-                <Ionicons name="star" size={24} color={brandColors.leads} />
+              <View style={[styles.actionIcon, { backgroundColor: statCardColors.leads.bg }]}>
+                <Ionicons name="star" size={24} color={statCardColors.leads.text} />
               </View>
               <Text style={styles.actionText}>Nuevo{'\n'}Lead</Text>
             </TouchableOpacity>
@@ -240,8 +240,8 @@ export default function DashboardScreen() {
               onPress={() => router.push('/property/add')}
               activeOpacity={0.7}
             >
-              <View style={[styles.actionIcon, { backgroundColor: brandColors.propertiesLight }]}>
-                <Ionicons name="home" size={24} color={brandColors.properties} />
+              <View style={[styles.actionIcon, { backgroundColor: statCardColors.properties.bg }]}>
+                <Ionicons name="home" size={24} color={statCardColors.properties.text} />
               </View>
               <Text style={styles.actionText}>Nueva{'\n'}Propiedad</Text>
             </TouchableOpacity>
@@ -251,8 +251,8 @@ export default function DashboardScreen() {
               onPress={() => router.push('/appointment/add')}
               activeOpacity={0.7}
             >
-              <View style={[styles.actionIcon, { backgroundColor: brandColors.calendarLight }]}>
-                <Ionicons name="calendar" size={24} color={brandColors.calendar} />
+              <View style={[styles.actionIcon, { backgroundColor: statCardColors.calendar.bg }]}>
+                <Ionicons name="calendar" size={24} color={statCardColors.calendar.text} />
               </View>
               <Text style={styles.actionText}>Nueva{'\n'}Cita</Text>
             </TouchableOpacity>
@@ -262,11 +262,11 @@ export default function DashboardScreen() {
         {/* Buyer Reserve Card */}
         <View style={styles.section}>
           <TouchableOpacity 
-            style={styles.buyerReserveCard} 
+            style={[styles.buyerReserveCard, { backgroundColor: statCardColors.buyerReserve.bg }]}
             onPress={() => router.push('/buyer-reserve')}
             activeOpacity={0.8}
           >
-            <View style={styles.buyerReserveIcon}>
+            <View style={[styles.buyerReserveIcon, { backgroundColor: statCardColors.buyerReserve.text }]}>
               <Ionicons name="wallet" size={28} color="#fff" />
             </View>
             <View style={styles.buyerReserveContent}>
@@ -276,7 +276,7 @@ export default function DashboardScreen() {
               </Text>
             </View>
             <View style={styles.buyerReserveArrow}>
-              <Ionicons name="chevron-forward" size={20} color={brandColors.buyerReserve} />
+              <Ionicons name="chevron-forward" size={20} color={statCardColors.buyerReserve.text} />
             </View>
           </TouchableOpacity>
         </View>
@@ -449,17 +449,15 @@ const createStyles = (colors: any, insets: any) =>
     buyerReserveCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: brandColors.buyerReserveLight,
       borderRadius: borderRadius.lg,
       padding: spacing.md,
       borderWidth: 1,
-      borderColor: brandColors.buyerReserve + '40',
+      borderColor: colors.border,
     },
     buyerReserveIcon: {
       width: 52,
       height: 52,
       borderRadius: 26,
-      backgroundColor: brandColors.buyerReserve,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing.md,
