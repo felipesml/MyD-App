@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appointmentsAPI, clientsAPI, leadsAPI, propertiesAPI } from '../../src/api/client';
 import { Client, Lead, Property } from '../../src/types';
 
 export default function AddAppointmentScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [appointmentType, setAppointmentType] = useState<'visita' | 'reunion' | 'llamada' | 'otro'>('visita');
@@ -150,7 +152,7 @@ export default function AddAppointmentScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>

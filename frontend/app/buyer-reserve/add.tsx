@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { buyerReservesAPI } from '../../src/api/client';
 import WhatsAppButton from '../../src/components/WhatsAppButton';
 
@@ -18,6 +19,7 @@ type PaymentMethod = 'contado' | 'credito' | 'leasing' | 'otro';
 
 export default function AddBuyerReserveScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -88,7 +90,7 @@ export default function AddBuyerReserveScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>

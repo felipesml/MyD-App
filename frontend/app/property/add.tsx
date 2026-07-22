@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { propertiesAPI } from '../../src/api/client';
 import { Client } from '../../src/types';
 import * as ImagePicker from 'expo-image-picker';
@@ -39,6 +40,7 @@ const REGIONES_CHILE = [
 
 export default function AddPropertyScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showClientModal, setShowClientModal] = useState(false);
   const [title, setTitle] = useState('');
@@ -184,7 +186,7 @@ export default function AddPropertyScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.form}>
           {/* Cliente */}
           <View style={styles.inputGroup}>
