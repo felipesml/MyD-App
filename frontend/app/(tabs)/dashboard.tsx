@@ -146,63 +146,75 @@ export default function DashboardScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats Cards */}
+        {/* Stats Cards - Grid 2x2 */}
         <View style={styles.statsContainer}>
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: statCardColors.clients.bg }]}
-            onPress={() => router.push('/(tabs)/clients')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.clients.text }]}>
-              <Ionicons name="people" size={24} color="#fff" />
-            </View>
-            <Text style={[styles.statValue, { color: statCardColors.clients.text }]}>
-              {stats?.total_clients || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: statCardColors.clients.text }]}>Clientes</Text>
-          </TouchableOpacity>
+          <View style={styles.statsRow}>
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: statCardColors.clients.bg }]}
+              onPress={() => router.push('/(tabs)/clients')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.statIconContainer, { backgroundColor: statCardColors.clients.text }]}>
+                <Ionicons name="people" size={18} color="#fff" />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={[styles.statValue, { color: statCardColors.clients.text }]}>
+                  {stats?.total_clients || 0}
+                </Text>
+                <Text style={[styles.statLabel, { color: statCardColors.clients.text }]}>Clientes</Text>
+              </View>
+            </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: statCardColors.leads.bg }]}
-            onPress={() => router.push('/(tabs)/leads')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.leads.text }]}>
-              <Ionicons name="star" size={24} color="#fff" />
-            </View>
-            <Text style={[styles.statValue, { color: statCardColors.leads.text }]}>
-              {stats?.total_leads || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: statCardColors.leads.text }]}>Leads</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: statCardColors.leads.bg }]}
+              onPress={() => router.push('/(tabs)/leads')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.statIconContainer, { backgroundColor: statCardColors.leads.text }]}>
+                <Ionicons name="star" size={18} color="#fff" />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={[styles.statValue, { color: statCardColors.leads.text }]}>
+                  {stats?.total_leads || 0}
+                </Text>
+                <Text style={[styles.statLabel, { color: statCardColors.leads.text }]}>Leads</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: statCardColors.properties.bg }]}
-            onPress={() => router.push('/(tabs)/properties')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.properties.text }]}>
-              <Ionicons name="home" size={24} color="#fff" />
-            </View>
-            <Text style={[styles.statValue, { color: statCardColors.properties.text }]}>
-              {stats?.total_properties || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: statCardColors.properties.text }]}>Propiedades</Text>
-          </TouchableOpacity>
+          <View style={styles.statsRow}>
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: statCardColors.properties.bg }]}
+              onPress={() => router.push('/(tabs)/properties')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.statIconContainer, { backgroundColor: statCardColors.properties.text }]}>
+                <Ionicons name="home" size={18} color="#fff" />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={[styles.statValue, { color: statCardColors.properties.text }]}>
+                  {stats?.total_properties || 0}
+                </Text>
+                <Text style={[styles.statLabel, { color: statCardColors.properties.text }]}>Propiedades</Text>
+              </View>
+            </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.statCard, { backgroundColor: statCardColors.calendar.bg }]}
-            onPress={() => router.push('/(tabs)/calendar')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.statIconContainer, { backgroundColor: statCardColors.calendar.text }]}>
-              <Ionicons name="calendar" size={24} color="#fff" />
-            </View>
-            <Text style={[styles.statValue, { color: statCardColors.calendar.text }]}>
-              {stats?.upcoming_appointments || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: statCardColors.calendar.text }]}>Citas</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.statCard, { backgroundColor: statCardColors.calendar.bg }]}
+              onPress={() => router.push('/(tabs)/calendar')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.statIconContainer, { backgroundColor: statCardColors.calendar.text }]}>
+                <Ionicons name="calendar" size={18} color="#fff" />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={[styles.statValue, { color: statCardColors.calendar.text }]}>
+                  {stats?.upcoming_appointments || 0}
+                </Text>
+                <Text style={[styles.statLabel, { color: statCardColors.calendar.text }]}>Citas</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Quick Actions */}
@@ -383,36 +395,40 @@ const createStyles = (colors: any, insets: any) =>
       paddingBottom: spacing.xl,
     },
     statsContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
       padding: spacing.md,
+      gap: spacing.sm,
+    },
+    statsRow: {
+      flexDirection: 'row',
       gap: spacing.sm,
     },
     statCard: {
       flex: 1,
-      minWidth: '47%',
+      flexDirection: 'row',
+      alignItems: 'center',
       padding: spacing.md,
       borderRadius: borderRadius.lg,
-      alignItems: 'center',
       ...shadows.sm,
     },
     statIconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: spacing.sm,
+      marginRight: spacing.sm,
+    },
+    statContent: {
+      flex: 1,
     },
     statValue: {
       fontWeight: '700',
-      fontSize: 32,
+      fontSize: 24,
     },
     statLabel: {
       fontWeight: '500',
-      fontSize: 13,
-      color: colors.textSecondary,
-      marginTop: 4,
+      fontSize: 12,
+      marginTop: 2,
     },
     section: {
       paddingHorizontal: spacing.md,
