@@ -430,7 +430,7 @@ async def get_client(client_id: str, agent = Depends(get_current_agent)):
     
     try:
         client = await db.clients.find_one({"_id": ObjectId(client_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid client ID")
     
     if not client:
@@ -458,7 +458,7 @@ async def update_client(client_id: str, client_data: ClientCreate, agent = Depen
     
     try:
         client = await db.clients.find_one({"_id": ObjectId(client_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid client ID")
     
     if not client:
@@ -509,7 +509,7 @@ async def delete_client(client_id: str, agent = Depends(get_current_agent)):
     
     try:
         client = await db.clients.find_one({"_id": ObjectId(client_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid client ID")
     
     if not client:
@@ -611,7 +611,7 @@ async def get_lead(lead_id: str, agent = Depends(get_current_agent)):
     
     try:
         lead = await db.leads.find_one({"_id": ObjectId(lead_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid lead ID")
     
     if not lead:
@@ -640,7 +640,7 @@ async def update_lead(lead_id: str, lead_data: LeadCreate, agent = Depends(get_c
     
     try:
         lead = await db.leads.find_one({"_id": ObjectId(lead_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid lead ID")
     
     if not lead:
@@ -697,7 +697,7 @@ async def delete_lead(lead_id: str, agent = Depends(get_current_agent)):
     
     try:
         lead = await db.leads.find_one({"_id": ObjectId(lead_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid lead ID")
     
     if not lead:
@@ -785,7 +785,7 @@ async def get_buyer_reserve(buyer_reserve_id: str, agent = Depends(get_current_a
     
     try:
         buyer_reserve = await db.buyer_reserves.find_one({"_id": ObjectId(buyer_reserve_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid buyer reserve ID")
     
     if not buyer_reserve:
@@ -811,7 +811,7 @@ async def update_buyer_reserve(buyer_reserve_id: str, buyer_reserve_data: BuyerR
     
     try:
         buyer_reserve = await db.buyer_reserves.find_one({"_id": ObjectId(buyer_reserve_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid buyer reserve ID")
     
     if not buyer_reserve:
@@ -861,7 +861,7 @@ async def delete_buyer_reserve(buyer_reserve_id: str, agent = Depends(get_curren
     
     try:
         buyer_reserve = await db.buyer_reserves.find_one({"_id": ObjectId(buyer_reserve_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid buyer reserve ID")
     
     if not buyer_reserve:
@@ -927,7 +927,7 @@ async def create_property(property_data: PropertyCreate, agent = Depends(get_cur
     # Verify client exists and belongs to agent
     try:
         client = await db.clients.find_one({"_id": ObjectId(property_data.client_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid client ID")
     
     if not client:
@@ -999,7 +999,7 @@ async def get_properties_by_client(client_id: str, agent = Depends(get_current_a
     # Verify client exists and belongs to agent
     try:
         client = await db.clients.find_one({"_id": ObjectId(client_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid client ID")
     
     if not client:
@@ -1038,7 +1038,7 @@ async def get_property(property_id: str, agent = Depends(get_current_agent)):
     
     try:
         prop = await db.properties.find_one({"_id": ObjectId(property_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid property ID")
     
     if not prop:
@@ -1079,7 +1079,7 @@ async def update_property(property_id: str, property_data: PropertyCreate, agent
     
     try:
         prop = await db.properties.find_one({"_id": ObjectId(property_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid property ID")
     
     if not prop:
@@ -1088,7 +1088,7 @@ async def update_property(property_id: str, property_data: PropertyCreate, agent
     # Verify client exists and belongs to agent
     try:
         client = await db.clients.find_one({"_id": ObjectId(property_data.client_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid client ID")
     
     if not client:
@@ -1160,7 +1160,7 @@ async def delete_property(property_id: str, agent = Depends(get_current_agent)):
     
     try:
         prop = await db.properties.find_one({"_id": ObjectId(property_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid property ID")
     
     if not prop:
@@ -1331,7 +1331,7 @@ async def get_appointment(appointment_id: str, agent = Depends(get_current_agent
     
     try:
         appt = await db.appointments.find_one({"_id": ObjectId(appointment_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid appointment ID")
     
     if not appt:
@@ -1373,7 +1373,7 @@ async def update_appointment(appointment_id: str, appointment_data: AppointmentC
     
     try:
         appt = await db.appointments.find_one({"_id": ObjectId(appointment_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid appointment ID")
     
     if not appt:
@@ -1425,16 +1425,16 @@ async def update_appointment(appointment_id: str, appointment_data: AppointmentC
     )
 
 @api_router.put("/appointments/{appointment_id}/status")
-async def update_appointment_status(appointment_id: str, status: str = Query(...), agent = Depends(get_current_agent)):
+async def update_appointment_status(appointment_id: str, new_status: str = Query(...), agent = Depends(get_current_agent)):
     """Update appointment status"""
     agent_id = str(agent["_id"])
     
-    if status not in ["programada", "completada", "cancelada"]:
+    if new_status not in ["programada", "completada", "cancelada"]:
         raise HTTPException(status_code=400, detail="Invalid status")
     
     try:
         appt = await db.appointments.find_one({"_id": ObjectId(appointment_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid appointment ID")
     
     if not appt:
@@ -1442,14 +1442,14 @@ async def update_appointment_status(appointment_id: str, status: str = Query(...
     
     await db.appointments.update_one(
         {"_id": ObjectId(appointment_id)},
-        {"$set": {"status": status}}
+        {"$set": {"status": new_status}}
     )
     
     # Create activity
     await create_activity(
         agent_id=agent_id,
         activity_type="appointment_status_changed",
-        description=f"Cita {appt['title']}: {appt['status']} → {status}",
+        description=f"Cita {appt['title']}: {appt['status']} → {new_status}",
         related_entity="appointment",
         related_id=appointment_id
     )
@@ -1463,7 +1463,7 @@ async def delete_appointment(appointment_id: str, agent = Depends(get_current_ag
     
     try:
         appt = await db.appointments.find_one({"_id": ObjectId(appointment_id), "agent_id": agent_id})
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid appointment ID")
     
     if not appt:
@@ -1524,15 +1524,15 @@ async def get_dashboard_stats(agent = Depends(get_current_agent)):
     
     # Leads by status
     leads_by_status = {}
-    for status in ["nuevo", "contactado", "visita_programada", "negociacion", "cerrado", "perdido"]:
-        count = await db.leads.count_documents({"agent_id": agent_id, "status": status})
-        leads_by_status[status] = count
+    for lead_status in ["nuevo", "contactado", "visita_programada", "negociacion", "cerrado", "perdido"]:
+        count = await db.leads.count_documents({"agent_id": agent_id, "status": lead_status})
+        leads_by_status[lead_status] = count
     
     # Properties by status
     properties_by_status = {}
-    for status in ["disponible", "reservada", "vendida", "arrendada"]:
-        count = await db.properties.count_documents({"agent_id": agent_id, "status": status})
-        properties_by_status[status] = count
+    for prop_status in ["disponible", "reservada", "vendida", "arrendada"]:
+        count = await db.properties.count_documents({"agent_id": agent_id, "status": prop_status})
+        properties_by_status[prop_status] = count
     
     return DashboardStats(
         total_clients=total_clients,
