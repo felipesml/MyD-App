@@ -336,11 +336,50 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED - Buyer Reserve module accessible from dashboard card. Module loads correctly."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTED - Buyer Reserve title fix verified. Header correctly shows 'Compradores en Reserva' (NOT 'index'). Bug fix confirmed working."
+  
+  - task: "Client Detail Screen"
+    implemented: true
+    working: true
+    file: "/app/frontend/app/client/[id].tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED - Client detail screen loads successfully. CRITICAL BUG FIX VERIFIED: NO 'Unmatched Route' error appears when clicking on a client. Screen displays client name, phone, email, contact information section, properties list (0 properties), and action buttons (Editar, Eliminar). Navigation from Clientes tab → Client card → Detail screen works correctly."
+  
+  - task: "Settings - Notifications"
+    implemented: true
+    working: true
+    file: "/app/frontend/app/settings/notifications.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED - NEW FEATURE VERIFIED: Notifications settings option added to Settings screen with bell icon. Notifications settings screen includes: (1) Toggle for enabling/disabling 'Recordatorios de Citas', (2) Time options section with all 6 options (5, 10, 15, 30 minutos, 1 hora, 2 horas), (3) Reminder count section with all 3 options (1, 2, 3 recordatorios). All UI elements render correctly."
+  
+  - task: "Region Filter for Properties"
+    implemented: true
+    working: true
+    file: "/app/frontend/app/property/add.tsx, /app/frontend/app/settings/regions.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CODE VERIFIED - Region filter implementation confirmed. Settings → Filtro de Regiones allows selecting specific regions. Property add form (property/add.tsx) uses useRegion hook and getFilteredRegions() function (lines 21, 26-27) to filter available regions. Region selector displays only selected regions from settings. Implementation uses RegionContext to manage selected regions across the app."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: true
 
 test_plan:
@@ -359,3 +398,5 @@ agent_communication:
     message: "Mobile app bug fixes verification completed. ✅ ALL 5 BUG FIXES VERIFIED: (1) App loading issue FIXED - app loads past splash screen, no font loading problems; (2) Tab bar labels FIXED - all 5 labels visible (Inicio, Clientes, Leads, Inmuebles, Agenda); (3) Settings navigation duplication FIXED - only one 'Configuración' header (code verified); (4) Dark mode contrast FIXED - proper colors defined in getStatCardColors function; (5) Nationality placeholder REMOVED - field has no placeholder in code. Frontend modules tested: Authentication (login working), Dashboard (displaying correctly), all 5 tab screens accessible, Buyer Reserve module working. Test credentials used: agente@crm.com / password123. Mobile viewport (390x844) used for testing. All critical functionality working correctly."
   - agent: "testing"
     message: "Button positioning fix verification completed. ✅ SAFEAREAINSETS FIX VERIFIED: All 5 forms have been updated with SafeAreaInsets padding (paddingBottom: insets.bottom + 24). Code review confirmed: (1) Lead form - line 70 in lead/add.tsx; (2) Appointment form - line 155 in appointment/add.tsx; (3) Client form - line 66 in client/add.tsx; (4) Property form - line 189 in property/add.tsx; (5) Buyer Reserve form - line 93 in buyer-reserve/add.tsx. All forms use useSafeAreaInsets() hook and apply padding to ScrollView contentContainerStyle. UI testing on mobile viewport (390x844) confirmed buttons are properly positioned with adequate spacing from bottom edge. Screenshots captured showing 'Cancelar' and 'Guardar' buttons with proper spacing. The fix prevents button overlap with Android navigation bar as intended."
+  - agent: "testing"
+    message: "Bug fixes and new features verification completed. ✅ ALL 4 ITEMS VERIFIED: (1) CRITICAL BUG FIX - Client Detail Screen: NO 'Unmatched Route' error when clicking on client. Screen loads correctly showing client name, phone, email, contact info section, properties list, and action buttons. (2) Buyer Reserve Title Fix: Header correctly displays 'Compradores en Reserva' (NOT 'index'). (3) NEW FEATURE - Settings Notifications: Option added with bell icon. Settings screen includes toggle for reminders, time options (5,10,15,30min,1h,2h), and reminder count options (1,2,3). (4) Region Filter: Implementation verified in code - Settings → Filtro de Regiones allows region selection, property form uses getFilteredRegions() to show only selected regions. Test credentials: agente@crm.com / password123. Mobile viewport (390x844). All requested features working correctly."

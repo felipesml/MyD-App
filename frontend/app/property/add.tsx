@@ -18,35 +18,19 @@ import { propertiesAPI } from '../../src/api/client';
 import { Client } from '../../src/types';
 import * as ImagePicker from 'expo-image-picker';
 import ClientSelectorModal from '../../src/components/ClientSelectorModal';
-
-const REGIONES_CHILE = [
-  'Región de Arica y Parinacota',
-  'Región de Tarapacá',
-  'Región de Antofagasta',
-  'Región de Atacama',
-  'Región de Coquimbo',
-  'Región de Valparaíso',
-  'Región Metropolitana',
-  'Región del Libertador General Bernardo O\'Higgins',
-  'Región del Maule',
-  'Región del Ñuble',
-  'Región del Biobío',
-  'Región de La Araucanía',
-  'Región de Los Ríos',
-  'Región de Los Lagos',
-  'Región de Aysén del General Carlos Ibáñez del Campo',
-  'Región de Magallanes y de la Antártica Chilena',
-];
+import { useRegion, CHILE_REGIONS } from '../../src/contexts/RegionContext';
 
 export default function AddPropertyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { getFilteredRegions } = useRegion();
+  const availableRegions = getFilteredRegions();
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showClientModal, setShowClientModal] = useState(false);
   const [title, setTitle] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
-  const [region, setRegion] = useState('Región Metropolitana');
+  const [region, setRegion] = useState(availableRegions[0] || 'Metropolitana');
   const [price, setPrice] = useState('');
   const [propertyType, setPropertyType] = useState<'casa' | 'apartamento' | 'terreno' | 'comercial' | 'oficina'>('casa');
   const [transactionType, setTransactionType] = useState<'venta' | 'arriendo'>('venta');
@@ -260,14 +244,14 @@ export default function AddPropertyScreen() {
               Región <Text style={styles.required}>*</Text>
             </Text>
             <ScrollView horizontal style={styles.regionSelector} showsHorizontalScrollIndicator={false}>
-              {REGIONES_CHILE.map((reg) => (
+              {availableRegions.map((reg) => (
                 <TouchableOpacity
                   key={reg}
                   style={[styles.regionChip, region === reg && styles.regionChipActive]}
                   onPress={() => setRegion(reg)}
                 >
                   <Text style={[styles.regionChipText, region === reg && styles.regionChipTextActive]}>
-                    {reg.replace('Región de ', '').replace('Región del ', '').replace('Región ', '')}
+                    {reg}
                   </Text>
                 </TouchableOpacity>
               ))}

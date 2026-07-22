@@ -16,10 +16,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appointmentsAPI, clientsAPI, leadsAPI, propertiesAPI } from '../../src/api/client';
 import { Client, Lead, Property } from '../../src/types';
+import { useNotifications } from '../../src/contexts/NotificationContext';
 
 export default function AddAppointmentScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { scheduleAppointmentReminder } = useNotifications();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [appointmentType, setAppointmentType] = useState<'visita' | 'reunion' | 'llamada' | 'otro'>('visita');
@@ -83,7 +85,7 @@ export default function AddAppointmentScreen() {
     try {
       const dateTime = `${date}T${time}:00.000Z`;
 
-      await appointmentsAPI.create({
+      const newAppointment = await appointmentsAPI.create({
         title: title.trim(),
         description: description.trim() || undefined,
         appointment_type: appointmentType,
@@ -93,6 +95,14 @@ export default function AddAppointmentScreen() {
         duration_minutes: parseInt(durationMinutes),
         notes: notes.trim() || undefined,
       });
+
+      // Schedule notification reminder
+      const appointmentDate = new Date(`${date}T${time}:00`);
+      await scheduleAppointmentReminder(
+        newAppointment.id,
+        title.trim(),
+        appointmentDate
+      );
 
       Alert.alert('Éxito', 'Cita creada correctamente', [
         {

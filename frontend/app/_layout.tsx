@@ -3,6 +3,7 @@ import React from 'react';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { ThemeProvider } from '../src/contexts/ThemeContext';
 import { RegionProvider } from '../src/contexts/RegionContext';
+import { NotificationProvider } from '../src/contexts/NotificationContext';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Prevent auto-hiding of splash screen
@@ -39,19 +40,21 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <RegionProvider>
-        <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="client" />
-            <Stack.Screen name="lead" />
-            <Stack.Screen name="property" />
-            <Stack.Screen name="appointment" />
-            <Stack.Screen name="buyer-reserve" />
-            <Stack.Screen name="settings" />
-          </Stack>
-        </AuthProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="client" />
+              <Stack.Screen name="lead" />
+              <Stack.Screen name="property" />
+              <Stack.Screen name="appointment" />
+              <Stack.Screen name="buyer-reserve" />
+              <Stack.Screen name="settings" />
+            </Stack>
+          </AuthProvider>
+        </NotificationProvider>
       </RegionProvider>
     </ThemeProvider>
   );

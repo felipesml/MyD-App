@@ -4,6 +4,13 @@ export default function BuyerReserveLayout() {
   return (
     <Stack>
       <Stack.Screen
+        name="index"
+        options={{
+          headerShown: false,
+          title: 'Compradores en Reserva',
+        }}
+      />
+      <Stack.Screen
         name="[id]"
         options={{
           headerShown: true,
@@ -16,14 +23,6 @@ export default function BuyerReserveLayout() {
         options={{
           headerShown: true,
           title: 'Nuevo Comprador en Reserva',
-          presentation: 'modal',
-        }}
-      />
-      <Stack.Screen
-        name="edit/[id]"
-        options={{
-          headerShown: true,
-          title: 'Editar Comprador',
           presentation: 'modal',
         }}
       />

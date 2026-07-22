@@ -118,6 +118,22 @@ export default function SettingsScreen() {
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/settings/notifications')}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.menuIcon, { backgroundColor: '#fef3c7' }]}>
+                <Ionicons name="notifications" size={20} color="#f59e0b" />
+              </View>
+              <View>
+                <Text style={styles.menuItemText}>Notificaciones</Text>
+                <Text style={styles.menuItemSubtext}>Recordatorios de citas</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
         </View>
 
         {/* Account Section */}
