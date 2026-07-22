@@ -358,12 +358,12 @@ const createStyles = (colors: any, insets: any) =>
       borderRadius: 8,
     },
     greeting: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 20,
       color: colors.text,
     },
     subGreeting: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 13,
       color: colors.textMuted,
       marginTop: 2,
@@ -405,11 +405,11 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: spacing.sm,
     },
     statValue: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 32,
     },
     statLabel: {
-      fontFamily: fonts.medium,
+      fontWeight: '500',
       fontSize: 13,
       color: colors.textSecondary,
       marginTop: 4,
@@ -419,7 +419,7 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: spacing.md,
     },
     sectionTitle: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 18,
       color: colors.text,
       marginBottom: spacing.md,
@@ -440,7 +440,7 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: spacing.xs,
     },
     actionText: {
-      fontFamily: fonts.medium,
+      fontWeight: '500',
       fontSize: 12,
       color: colors.textSecondary,
       textAlign: 'center',
@@ -466,13 +466,13 @@ const createStyles = (colors: any, insets: any) =>
       flex: 1,
     },
     buyerReserveTitle: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       fontSize: 16,
       color: colors.text,
       marginBottom: 4,
     },
     buyerReserveDescription: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 13,
       color: colors.textMuted,
     },
@@ -514,14 +514,14 @@ const createStyles = (colors: any, insets: any) =>
       flex: 1,
     },
     activityDescription: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 14,
       color: colors.text,
       marginBottom: 4,
       lineHeight: 20,
     },
     activityTime: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 12,
       color: colors.textMuted,
     },
@@ -533,13 +533,13 @@ const createStyles = (colors: any, insets: any) =>
       ...shadows.sm,
     },
     emptyText: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       fontSize: 16,
       color: colors.textSecondary,
       marginTop: spacing.md,
     },
     emptySubtext: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 13,
       color: colors.textMuted,
       textAlign: 'center',

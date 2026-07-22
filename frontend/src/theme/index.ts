@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { fonts, typography } from './fonts';
+import { fonts, fontWeights, typography } from './fonts';
 
 // M&D Propiedades Brand Colors
 export const brandColors = {
@@ -145,4 +145,4 @@ export const commonStyles = StyleSheet.create({
   },
 });
 
-export { fonts, typography };
+export { fonts, fontWeights, typography };

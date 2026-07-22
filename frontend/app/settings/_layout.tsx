@@ -7,41 +7,28 @@ export default function SettingsLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.surface,
-        },
-        headerTintColor: colors.text,
-        headerShadowVisible: false,
+        headerShown: false,
         contentStyle: {
           backgroundColor: colors.background,
         },
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          title: 'Configuración',
-          headerBackTitle: 'Atrás',
-        }}
-      />
+      <Stack.Screen name="index" />
       <Stack.Screen
         name="profile"
         options={{
-          title: 'Editar Perfil',
           presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="regions"
         options={{
-          title: 'Filtro de Regiones',
           presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="theme"
         options={{
-          title: 'Apariencia',
           presentation: 'modal',
         }}
       />

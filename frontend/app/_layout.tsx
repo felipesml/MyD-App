@@ -3,30 +3,21 @@ import React from 'react';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { ThemeProvider } from '../src/contexts/ThemeContext';
 import { RegionProvider } from '../src/contexts/RegionContext';
-import { Asset } from 'expo-asset';
 import * as SplashScreen from 'expo-splash-screen';
-import { useMontserratFonts } from '../src/theme/fonts';
-import { View, ActivityIndicator } from 'react-native';
 
 // Prevent auto-hiding of splash screen
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = React.useState(false);
-  const { fontsLoaded, fontError } = useMontserratFonts();
 
   React.useEffect(() => {
     async function prepare() {
       try {
-        // Pre-warm the icon assets
-        const iconAssets = [
-          require('../assets/images/icon.png'),
-          require('../assets/images/adaptive-icon.png'),
-          require('../assets/images/favicon.png'),
-        ];
-        await Asset.loadAsync(iconAssets);
+        // Small delay to ensure providers are ready
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (e) {
-        console.warn('Error loading assets:', e);
+        console.warn('Error during app preparation:', e);
       } finally {
         setAppIsReady(true);
       }
@@ -36,21 +27,13 @@ export default function RootLayout() {
   }, []);
 
   React.useEffect(() => {
-    if (appIsReady && fontsLoaded) {
+    if (appIsReady) {
       SplashScreen.hideAsync();
     }
-  }, [appIsReady, fontsLoaded]);
+  }, [appIsReady]);
 
-  if (!appIsReady || !fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <ActivityIndicator size="large" color="#dc2626" />
-      </View>
-    );
-  }
-
-  if (fontError) {
-    console.error('Font loading error:', fontError);
+  if (!appIsReady) {
+    return null;
   }
 
   return (

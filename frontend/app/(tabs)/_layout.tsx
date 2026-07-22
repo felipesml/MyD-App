@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { brandColors, fonts } from '../../src/theme';
+import { brandColors } from '../../src/theme';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -23,7 +23,7 @@ export default function TabsLayout() {
           paddingTop: 6,
         },
         tabBarLabelStyle: {
-          fontFamily: fonts.medium,
+          fontWeight: '500',
           fontSize: 10,
           marginTop: -2,
         },

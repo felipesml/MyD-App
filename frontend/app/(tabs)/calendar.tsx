@@ -355,12 +355,12 @@ const createStyles = (colors: any, insets: any) =>
       borderBottomColor: colors.border,
     },
     headerTitle: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 28,
       color: colors.text,
     },
     headerSubtitle: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 14,
       color: colors.textMuted,
       marginTop: 2,
@@ -398,12 +398,12 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: spacing.md,
     },
     sectionTitle: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 18,
       color: colors.text,
     },
     sectionCount: {
-      fontFamily: fonts.medium,
+      fontWeight: '500',
       fontSize: 14,
       color: colors.textMuted,
     },
@@ -436,7 +436,7 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: 4,
     },
     appointmentTitle: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       fontSize: 16,
       color: colors.text,
       flex: 1,
@@ -448,11 +448,11 @@ const createStyles = (colors: any, insets: any) =>
       borderRadius: 8,
     },
     typeBadgeText: {
-      fontFamily: fonts.medium,
+      fontWeight: '500',
       fontSize: 11,
     },
     appointmentRelated: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 14,
       color: colors.textMuted,
       marginBottom: spacing.xs,
@@ -470,7 +470,7 @@ const createStyles = (colors: any, insets: any) =>
       gap: 4,
     },
     appointmentTimeText: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       fontSize: 14,
       color: brandColors.calendar,
     },
@@ -480,7 +480,7 @@ const createStyles = (colors: any, insets: any) =>
       gap: 4,
     },
     appointmentDurationText: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 13,
       color: colors.textMuted,
     },
@@ -498,7 +498,7 @@ const createStyles = (colors: any, insets: any) =>
       borderRadius: 3,
     },
     statusText: {
-      fontFamily: fonts.medium,
+      fontWeight: '500',
       fontSize: 11,
     },
     emptyState: {
@@ -518,13 +518,13 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: spacing.md,
     },
     emptyTitle: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 18,
       color: colors.text,
       marginBottom: spacing.xs,
     },
     emptyText: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 14,
       color: colors.textMuted,
       textAlign: 'center',
@@ -540,7 +540,7 @@ const createStyles = (colors: any, insets: any) =>
       gap: spacing.xs,
     },
     emptyButtonText: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       color: '#fff',
       fontSize: 16,
     },

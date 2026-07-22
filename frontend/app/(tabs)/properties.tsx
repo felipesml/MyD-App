@@ -257,12 +257,12 @@ const createStyles = (colors: any, insets: any) =>
       borderBottomColor: colors.border,
     },
     headerTitle: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 28,
       color: colors.text,
     },
     headerSubtitle: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 14,
       color: colors.textMuted,
       marginTop: 2,
@@ -293,7 +293,7 @@ const createStyles = (colors: any, insets: any) =>
     searchInput: {
       flex: 1,
       height: 48,
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 16,
       color: colors.text,
     },
@@ -332,7 +332,7 @@ const createStyles = (colors: any, insets: any) =>
       borderRadius: 16,
     },
     statusBadgeFloatText: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       fontSize: 12,
       color: '#fff',
     },
@@ -340,7 +340,7 @@ const createStyles = (colors: any, insets: any) =>
       padding: spacing.md,
     },
     propertyTitle: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       fontSize: 18,
       color: colors.text,
       marginBottom: 6,
@@ -352,13 +352,13 @@ const createStyles = (colors: any, insets: any) =>
       gap: 4,
     },
     propertyLocationText: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 13,
       color: colors.textMuted,
       flex: 1,
     },
     propertyPrice: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 22,
       color: brandColors.properties,
       marginBottom: spacing.sm,
@@ -377,7 +377,7 @@ const createStyles = (colors: any, insets: any) =>
       gap: 4,
     },
     featureText: {
-      fontFamily: fonts.medium,
+      fontWeight: '500',
       fontSize: 14,
       color: colors.textMuted,
     },
@@ -388,7 +388,7 @@ const createStyles = (colors: any, insets: any) =>
       paddingTop: spacing.sm,
     },
     ownerText: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 13,
       color: colors.textMuted,
     },
@@ -408,13 +408,13 @@ const createStyles = (colors: any, insets: any) =>
       marginBottom: spacing.md,
     },
     emptyTitle: {
-      fontFamily: fonts.bold,
+      fontWeight: '700',
       fontSize: 20,
       color: colors.text,
       marginBottom: spacing.xs,
     },
     emptyText: {
-      fontFamily: fonts.regular,
+      fontWeight: '400',
       fontSize: 14,
       color: colors.textMuted,
       textAlign: 'center',
@@ -430,7 +430,7 @@ const createStyles = (colors: any, insets: any) =>
       gap: spacing.xs,
     },
     emptyButtonText: {
-      fontFamily: fonts.semiBold,
+      fontWeight: '600',
       color: '#fff',
       fontSize: 16,
     },
