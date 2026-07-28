@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,9 @@ import {
   RefreshControl,
   ActivityIndicator,
   TextInput,
+  Image,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -41,9 +42,11 @@ export default function PropertiesScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadProperties();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadProperties();
+    }, [])
+  );
 
   useEffect(() => {
     filterProperties();
@@ -101,9 +104,13 @@ export default function PropertiesScreen() {
       activeOpacity={0.7}
     >
       <View style={styles.propertyImagePlaceholder}>
-        <View style={styles.propertyIconContainer}>
-          <Ionicons name="business" size={32} color={brandColors.properties} />
-        </View>
+        {item.images && item.images.length > 0 ? (
+          <Image source={{ uri: item.images[0] }} style={styles.propertyImage} resizeMode="cover" />
+        ) : (
+          <View style={styles.propertyIconContainer}>
+            <Ionicons name="business" size={32} color={brandColors.properties} />
+          </View>
+        )}
         <View style={[styles.statusBadgeFloat, { backgroundColor: STATUS_COLORS[item.status] }]}>
           <Text style={styles.statusBadgeFloatText}>{STATUS_LABELS[item.status]}</Text>
         </View>
@@ -314,6 +321,10 @@ const createStyles = (colors: any, insets: any) =>
       justifyContent: 'center',
       alignItems: 'center',
       position: 'relative',
+    },
+    propertyImage: {
+      width: '100%',
+      height: '100%',
     },
     propertyIconContainer: {
       width: 64,

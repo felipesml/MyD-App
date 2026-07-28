@@ -1,0 +1,42 @@
+{
+  "summary": "Comprehensive backend + frontend testing of P0 bug fixes for M&D Propiedades CRM. Backend: 16/16 pytest tests pass covering login, client CRUD, DELETE /clients/{id} returning 409 for clients with properties and cascade=true removing both, GET /leads|properties|appointments/{id}, PUT edits, error handling. Frontend (mobile viewport 390x844): login works, all 4 tabs navigate, detail screens for lead/property/appointment/client open with correct data (no Unmatched Route, no crash), Editar buttons open pre-filled edit forms (verified via screenshots showing values), useFocusEffect refreshes lists immediately (new lead/property visible without manual refresh), Buyer Reserve screen has search bar (placeholder 'Buscar por nombre, teléfono o email...') and budget filter chips (Todos / <$50M / $50M-$100M / $100M+), property card renders correctly with placeholder icon when no images, address is shown on property detail. All P0 bugs verified as fixed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global", "issues": ["Console: 'shadow*' style props deprecated, replace with 'boxShadow' in theme/shadows helper", "Console: Image style.tintColor deprecated, use props.tintColor", "Console: props.pointerEvents deprecated"]}
+    ],
+    "react_native_issues": [
+      {"component": "expo-notifications (web)", "issue": "Listener warning on web - non-blocking; only affects web preview, works on native. Reference: (any screen loading auth context)"}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_crm_bugfixes.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Cosmetic) Replace React Native deprecated 'shadow*' StyleSheet props with 'boxShadow' where applicable in /app/frontend/src/theme (shadows helper).",
+    "(Cosmetic) Replace Image style.tintColor with props.tintColor.",
+    "(Optional) Add testID props to key interactive elements (login button, tab buttons, Editar/Eliminar buttons, card items) to improve future automated test reliability."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 1568 lines — consider splitting into routers per resource (clients/leads/properties/appointments/buyer_reserves) for maintainability.",
+    "DELETE /clients cascade path is correct: 409 without cascade, 200 with cascade + associated properties removed.",
+    "All GET-by-id endpoints properly return 400 on invalid ObjectId and 404 on missing document."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_crm_bugfixes.py (created)",
+    "/app/backend/tests/conftest.py (created)"
+  ],
+  "success_rate": {"backend": "100% (16/16)", "frontend": "100% of critical flows verified"},
+  "seed_data_creation": "Ephemeral seed data (TEST_ prefixed) was created via API for both backend tests and UI verification (client, lead, property, appointment) and cleaned up at the end of every test run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend base URL uses EXPO_PUBLIC_BACKEND_URL (https://prospect-tracker-64.preview.emergentagent.com). Test credentials in /app/memory/test_credentials.md. Frontend has NO testID attributes yet — tests rely on placeholder text and visible text (Spanish labels: 'Iniciar Sesión', 'Editar', 'Eliminar', tabs 'Inicio'/'Clientes'/'Leads'/'Inmuebles'/'Agenda'). Detail routes are /client/{id}, /lead/{id}, /property/{id}, /appointment/{id}; edit routes are /{resource}/edit/{id}. Buyer reserve at /buyer-reserve. DELETE /api/clients/{id}?cascade=true removes properties too.",
+  "rca_of_issue": "All originally reported P0 bugs are confirmed fixed: (1) detail screens for lead/property/appointment now exist (previously navigated to non-existent routes causing Unmatched Route crash); (2) edit screens for each resource created; (3) useFocusEffect added to all list tabs (leads.tsx, properties.tsx, calendar.tsx, clients list) refreshes on focus so newly-created records appear without manual pull-to-refresh; (4) backend DELETE /clients now returns 409 with descriptive detail when properties exist and supports ?cascade=true to remove both. Verified via 16 pytest cases and Playwright UI walkthrough with screenshots."
+}

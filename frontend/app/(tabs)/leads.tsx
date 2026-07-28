@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -48,9 +48,11 @@ export default function LeadsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadLeads();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadLeads();
+    }, [])
+  );
 
   useEffect(() => {
     filterLeads();
@@ -185,6 +187,7 @@ export default function LeadsScreen() {
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
+        style={styles.filterScroll}
         contentContainerStyle={styles.filterContainer}
       >
         <TouchableOpacity
@@ -320,19 +323,23 @@ const createStyles = (colors: any, insets: any) =>
       fontSize: 16,
       color: colors.text,
     },
+    filterScroll: {
+      flexGrow: 0,
+      maxHeight: 48,
+    },
     filterContainer: {
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.md,
-      gap: spacing.sm,
+      paddingVertical: spacing.sm,
+      gap: spacing.xs,
     },
     filterChip: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 20,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      marginRight: spacing.sm,
+      marginRight: spacing.xs,
     },
     filterChipActive: {
       backgroundColor: brandColors.leads,
@@ -340,7 +347,7 @@ const createStyles = (colors: any, insets: any) =>
     },
     filterChipText: {
       fontWeight: '500',
-      fontSize: 13,
+      fontSize: 12,
       color: colors.textMuted,
     },
     filterChipTextActive: {

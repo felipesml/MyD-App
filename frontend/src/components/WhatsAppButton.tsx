@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Linking, Alert, StyleSheet } from 'react-native';
+import { TouchableOpacity, Linking, Alert, StyleSheet, Platform, ViewStyle, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface WhatsAppButtonProps {
@@ -7,60 +7,68 @@ interface WhatsAppButtonProps {
   size?: number;
   color?: string;
   disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export default function WhatsAppButton({ phone, size = 24, color = '#25D366', disabled = false }: WhatsAppButtonProps) {
+export default function WhatsAppButton({
+  phone,
+  size = 24,
+  color = '#25D366',
+  disabled = false,
+  style,
+}: WhatsAppButtonProps) {
   const formatPhoneForWhatsApp = (phoneNumber: string): string => {
     // Remove all non-numeric characters
     const cleaned = phoneNumber.replace(/\D/g, '');
-    
-    // If it starts with +56 (Chile), make sure it's in international format
+
+    // Chilean numbers: ensure country code 56
     if (cleaned.startsWith('56')) {
       return cleaned;
-    } else if (cleaned.startsWith('9') && cleaned.length === 9) {
-      // Chilean mobile number without country code
-      return '56' + cleaned;
     } else if (cleaned.length === 9) {
-      // Assume Chilean mobile
+      // Chilean mobile without country code
       return '56' + cleaned;
     }
-    
     return cleaned;
   };
 
-  const handlePress = () => {
+  const handlePress = async () => {
     if (!phone || phone.trim() === '') {
       Alert.alert('Error', 'Número de teléfono no disponible');
       return;
     }
 
     const formattedPhone = formatPhoneForWhatsApp(phone);
-    const whatsappUrl = `https://wa.me/${formattedPhone}`;
+    // wa.me works whether or not the app is installed: it opens the WhatsApp
+    // app when available and falls back to the browser otherwise.
+    const webUrl = `https://wa.me/${formattedPhone}`;
 
-    Linking.canOpenURL(whatsappUrl)
-      .then((supported) => {
-        if (supported) {
-          return Linking.openURL(whatsappUrl);
-        } else {
-          Alert.alert('Error', 'WhatsApp no está instalado en este dispositivo');
+    try {
+      if (Platform.OS !== 'web') {
+        // Try the native scheme first for a smoother experience
+        const nativeUrl = `whatsapp://send?phone=${formattedPhone}`;
+        const canOpenNative = await Linking.canOpenURL(nativeUrl);
+        if (canOpenNative) {
+          await Linking.openURL(nativeUrl);
+          return;
         }
-      })
-      .catch((err) => {
-        console.error('Error opening WhatsApp:', err);
-        Alert.alert('Error', 'No se pudo abrir WhatsApp');
-      });
+      }
+      await Linking.openURL(webUrl);
+    } catch (err) {
+      console.error('Error opening WhatsApp:', err);
+      Alert.alert('Error', 'No se pudo abrir WhatsApp');
+    }
   };
 
   if (disabled || !phone || phone.trim() === '') {
     return (
-      <TouchableOpacity style={styles.disabledButton} disabled>
+      <TouchableOpacity style={[styles.button, style]} disabled>
         <Ionicons name="logo-whatsapp" size={size} color="#9ca3af" />
       </TouchableOpacity>
     );
   }
 
   return (
-    <TouchableOpacity style={styles.button} onPress={handlePress}>
+    <TouchableOpacity style={[styles.button, style]} onPress={handlePress}>
       <Ionicons name="logo-whatsapp" size={size} color={color} />
     </TouchableOpacity>
   );
@@ -69,9 +77,5 @@ export default function WhatsAppButton({ phone, size = 24, color = '#25D366', di
 const styles = StyleSheet.create({
   button: {
     padding: 4,
-  },
-  disabledButton: {
-    padding: 4,
-    opacity: 0.5,
   },
 });

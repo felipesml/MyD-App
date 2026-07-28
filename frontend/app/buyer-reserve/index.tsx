@@ -8,6 +8,8 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,11 +18,20 @@ import { buyerReservesAPI } from '../../src/api/client';
 import { BuyerReserve } from '../../src/types';
 import WhatsAppButton from '../../src/components/WhatsAppButton';
 
+const BUDGET_RANGES: { key: string; label: string; min: number; max: number }[] = [
+  { key: 'lt50', label: '< $50M', min: 0, max: 50_000_000 },
+  { key: '50-100', label: '$50M - $100M', min: 50_000_000, max: 100_000_000 },
+  { key: '100-200', label: '$100M - $200M', min: 100_000_000, max: 200_000_000 },
+  { key: 'gt200', label: '> $200M', min: 200_000_000, max: Infinity },
+];
+
 export default function BuyerReserveListScreen() {
   const router = useRouter();
   const [buyerReserves, setBuyerReserves] = useState<BuyerReserve[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [budgetFilter, setBudgetFilter] = useState<string | null>(null);
 
   const fetchBuyerReserves = async (showRefresh = false) => {
     if (showRefresh) {
@@ -43,6 +54,26 @@ export default function BuyerReserveListScreen() {
       fetchBuyerReserves();
     }, [])
   );
+
+  const getFilteredReserves = () => {
+    let filtered = [...buyerReserves];
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (b) =>
+          `${b.first_name} ${b.last_name}`.toLowerCase().includes(q) ||
+          b.phone.toLowerCase().includes(q) ||
+          (b.email && b.email.toLowerCase().includes(q))
+      );
+    }
+    if (budgetFilter) {
+      const range = BUDGET_RANGES.find((r) => r.key === budgetFilter);
+      if (range) {
+        filtered = filtered.filter((b) => b.budget >= range.min && b.budget < range.max);
+      }
+    }
+    return filtered;
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -189,8 +220,49 @@ export default function BuyerReserveListScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#9ca3af" style={{ marginRight: 8 }} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar por nombre, teléfono o email..."
+          placeholderTextColor="#9ca3af"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color="#9ca3af" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterScroll}
+        contentContainerStyle={styles.filterRow}
+      >
+        <TouchableOpacity
+          style={[styles.filterChip, !budgetFilter && styles.filterChipActive]}
+          onPress={() => setBudgetFilter(null)}
+        >
+          <Text style={[styles.filterChipText, !budgetFilter && styles.filterChipTextActive]}>Todos</Text>
+        </TouchableOpacity>
+        {BUDGET_RANGES.map((range) => (
+          <TouchableOpacity
+            key={range.key}
+            style={[styles.filterChip, budgetFilter === range.key && styles.filterChipActive]}
+            onPress={() => setBudgetFilter(budgetFilter === range.key ? null : range.key)}
+          >
+            <Text style={[styles.filterChipText, budgetFilter === range.key && styles.filterChipTextActive]}>
+              {range.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       <FlatList
-        data={buyerReserves}
+        data={getFilteredReserves()}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
@@ -236,6 +308,53 @@ const styles = StyleSheet.create({
   },
   headerPlaceholder: {
     width: 40,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 15,
+    color: '#111827',
+  },
+  filterScroll: {
+    flexGrow: 0,
+    maxHeight: 60,
+  },
+  filterRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    marginRight: 8,
+  },
+  filterChipActive: {
+    backgroundColor: '#14b8a6',
+    borderColor: '#14b8a6',
+  },
+  filterChipText: {
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  filterChipTextActive: {
+    color: '#fff',
   },
   loadingContainer: {
     flex: 1,

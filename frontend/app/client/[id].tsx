@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { clientsAPI, propertiesAPI } from '../../src/api/client';
@@ -26,9 +26,11 @@ export default function ClientDetailScreen() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadClientData();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      loadClientData();
+    }, [id])
+  );
 
   const loadClientData = async () => {
     if (!id) return;
@@ -59,19 +61,38 @@ export default function ClientDetailScreen() {
         {
           text: 'Eliminar',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await clientsAPI.delete(id!);
-              Alert.alert('Éxito', 'Cliente eliminado correctamente', [
-                { text: 'OK', onPress: () => router.back() },
-              ]);
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Error al eliminar el cliente');
-            }
-          },
+          onPress: () => performDelete(false),
         },
       ]
     );
+  };
+
+  const performDelete = async (cascade: boolean) => {
+    try {
+      await clientsAPI.delete(id!, cascade);
+      Alert.alert('Éxito', 'Cliente eliminado correctamente', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch (error: any) {
+      // 409 => client has associated properties, offer cascade delete
+      if (error?.response?.status === 409) {
+        const detail = error?.response?.data?.detail || 'El cliente tiene propiedades asociadas';
+        Alert.alert(
+          'Cliente con propiedades',
+          `${detail}. ¿Deseas eliminar el cliente junto con sus propiedades?`,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Eliminar todo',
+              style: 'destructive',
+              onPress: () => performDelete(true),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Error', error?.response?.data?.detail || error.message || 'Error al eliminar el cliente');
+      }
+    }
   };
 
   const handleCall = () => {
@@ -173,7 +194,7 @@ export default function ClientDetailScreen() {
         <View style={styles.infoCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Propiedades ({properties.length})</Text>
-            <TouchableOpacity onPress={() => router.push('/property/add')}>
+            <TouchableOpacity onPress={() => router.push(`/property/add?clientId=${id}`)}>
               <Ionicons name="add-circle" size={24} color="#10b981" />
             </TouchableOpacity>
           </View>

@@ -503,8 +503,8 @@ async def update_client(client_id: str, client_data: ClientCreate, agent = Depen
     )
 
 @api_router.delete("/clients/{client_id}")
-async def delete_client(client_id: str, agent = Depends(get_current_agent)):
-    """Delete a client"""
+async def delete_client(client_id: str, cascade: bool = False, agent = Depends(get_current_agent)):
+    """Delete a client. If cascade=true, also delete associated properties."""
     agent_id = str(agent["_id"])
     
     try:
@@ -518,7 +518,13 @@ async def delete_client(client_id: str, agent = Depends(get_current_agent)):
     # Check if client has properties
     properties_count = await db.properties.count_documents({"client_id": client_id})
     if properties_count > 0:
-        raise HTTPException(status_code=400, detail="Cannot delete client with associated properties")
+        if not cascade:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cliente tiene {properties_count} propiedad(es) asociada(s)"
+            )
+        # Cascade: delete associated properties too
+        await db.properties.delete_many({"client_id": client_id})
     
     await db.clients.delete_one({"_id": ObjectId(client_id)})
     

@@ -10,11 +10,12 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { propertiesAPI } from '../../src/api/client';
+import { propertiesAPI, clientsAPI } from '../../src/api/client';
 import { Client } from '../../src/types';
 import * as ImagePicker from 'expo-image-picker';
 import ClientSelectorModal from '../../src/components/ClientSelectorModal';
@@ -22,6 +23,7 @@ import { useRegion, CHILE_REGIONS } from '../../src/contexts/RegionContext';
 
 export default function AddPropertyScreen() {
   const router = useRouter();
+  const { clientId: preselectedClientId } = useLocalSearchParams<{ clientId?: string }>();
   const insets = useSafeAreaInsets();
   const { getFilteredRegions } = useRegion();
   const availableRegions = getFilteredRegions();
@@ -46,6 +48,15 @@ export default function AddPropertyScreen() {
   useEffect(() => {
     requestPermissions();
   }, []);
+
+  useEffect(() => {
+    if (preselectedClientId) {
+      clientsAPI
+        .getById(preselectedClientId)
+        .then((c) => setSelectedClient(c))
+        .catch(() => {});
+    }
+  }, [preselectedClientId]);
 
   const requestPermissions = async () => {
     const [mediaLibraryStatus, cameraStatus] = await Promise.all([
@@ -388,9 +399,12 @@ export default function AddPropertyScreen() {
               <ScrollView horizontal style={styles.imagesContainer} showsHorizontalScrollIndicator={false}>
                 {images.map((image, index) => (
                   <View key={index} style={styles.imageWrapper}>
-                    <View style={styles.imagePlaceholder}>
-                      <Text style={styles.imagePlaceholderText}>Imagen {index + 1}</Text>
-                    </View>
+                    <Image source={{ uri: image }} style={styles.imagePreview} />
+                    {index === 0 && (
+                      <View style={styles.coverBadge}>
+                        <Text style={styles.coverBadgeText}>Portada</Text>
+                      </View>
+                    )}
                     <TouchableOpacity
                       style={styles.removeImageButton}
                       onPress={() => removeImage(index)}

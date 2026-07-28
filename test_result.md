@@ -378,16 +378,47 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 3
+  version: "1.1"
+  test_sequence: 4
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Appointments CRUD API"
+    - "Lead Detail & Edit Screens"
+    - "Property Detail & Edit Screens"
+    - "Appointment Detail & Edit Screens"
+    - "Client Delete Cascade"
+    - "List Auto-refresh on Focus"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+new_p0_tasks:
+  - task: "Lead/Property/Appointment Detail Screens"
+    implemented: true
+    working: "NA"
+    file: "app/lead/[id].tsx, app/property/[id].tsx, app/appointment/[id].tsx"
+    comment: "Created missing detail screens. Previously selecting a lead/property/appointment crashed (Unmatched Route) because [id].tsx did not exist. Property detail shows image gallery + tappable address that opens Maps."
+  - task: "Edit Screens (client/lead/property/appointment)"
+    implemented: true
+    working: "NA"
+    file: "app/*/edit/[id].tsx"
+    comment: "Created missing edit screens. Previously pressing Editar crashed. Property edit supports image upload + cover selection (base64)."
+  - task: "Client Delete Cascade"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, app/client/[id].tsx"
+    comment: "Delete client previously returned 400 when it had properties. Now returns 409 with a friendly message; frontend offers cascade delete (?cascade=true) which also deletes associated properties."
+  - task: "List Auto-refresh"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/*.tsx, app/buyer-reserve/index.tsx"
+    comment: "Lists now use useFocusEffect so newly created records appear immediately when returning to the tab."
+  - task: "WhatsApp open + Property cover image + Buyer Reserve search/filter + compact Leads filter"
+    implemented: true
+    working: "NA"
+    file: "src/components/WhatsAppButton.tsx, app/(tabs)/properties.tsx, app/buyer-reserve/index.tsx, app/(tabs)/leads.tsx"
+    comment: "WhatsApp opens via native scheme then wa.me fallback (no more 'not installed'). Property cards show cover image. Buyer Reserve has search bar + budget range filter. Leads status filter made compact and height-constrained."
 
 agent_communication:
   - agent: "main"

@@ -54,8 +54,8 @@ export const clientsAPI = {
     const response = await apiClient.put<Client>(`/clients/${id}`, data);
     return response.data;
   },
-  delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/clients/${id}`);
+  delete: async (id: string, cascade: boolean = false): Promise<void> => {
+    await apiClient.delete(`/clients/${id}`, { params: { cascade } });
   },
 };
 
