@@ -17,6 +17,7 @@ import { Appointment } from '../../src/types';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { usePreferences } from '../../src/contexts/PreferencesContext';
 import { fonts, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
 
 // Configure Spanish locale for calendar
@@ -54,6 +55,7 @@ export default function CalendarScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { formatTime } = usePreferences();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(true);
@@ -268,7 +270,7 @@ export default function CalendarScreen() {
                       <View style={styles.appointmentTime}>
                         <Ionicons name="time-outline" size={14} color={brandColors.calendar} />
                         <Text style={styles.appointmentTimeText}>
-                          {format(parseISO(appointment.date_time), 'HH:mm')}
+                          {formatTime(parseISO(appointment.date_time))}
                         </Text>
                       </View>
                       <View style={styles.appointmentDuration}>

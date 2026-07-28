@@ -3,6 +3,7 @@ export interface Agent {
   name: string;
   email: string;
   phone: string;
+  profile_photo?: string;
   created_at: string;
 }
 

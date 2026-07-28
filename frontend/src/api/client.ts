@@ -34,6 +34,16 @@ export const authAPI = {
     const response = await apiClient.get<Agent>('/auth/me');
     return response.data;
   },
+  updateProfile: async (data: {
+    name?: string;
+    phone?: string;
+    profile_photo?: string;
+    current_password?: string;
+    new_password?: string;
+  }): Promise<Agent> => {
+    const response = await apiClient.put<Agent>('/auth/me', data);
+    return response.data;
+  },
 };
 
 // Clients API

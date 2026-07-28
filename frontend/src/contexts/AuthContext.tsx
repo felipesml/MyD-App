@@ -10,6 +10,13 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: {
+    name?: string;
+    phone?: string;
+    profile_photo?: string;
+    current_password?: string;
+    new_password?: string;
+  }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,8 +87,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = async (data: {
+    name?: string;
+    phone?: string;
+    profile_photo?: string;
+    current_password?: string;
+    new_password?: string;
+  }) => {
+    try {
+      const updated = await authAPI.updateProfile(data);
+      await AsyncStorage.setItem('agent_data', JSON.stringify(updated));
+      setAgent(updated);
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      throw new Error(error.response?.data?.detail || 'Error al actualizar el perfil');
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ agent, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ agent, token, isLoading, login, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -16,6 +16,7 @@ import { es } from 'date-fns/locale';
 import { appointmentsAPI } from '../../src/api/client';
 import { Appointment } from '../../src/types';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { usePreferences } from '../../src/contexts/PreferencesContext';
 
 const TYPE_ICONS: Record<string, string> = {
   visita: 'home',
@@ -55,6 +56,7 @@ export default function AppointmentDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { formatTime } = usePreferences();
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -153,7 +155,7 @@ export default function AppointmentDetailScreen() {
             text={format(date, "EEEE d 'de' MMMM, yyyy", { locale: es })}
             colors={colors}
           />
-          <InfoRow icon="time-outline" text={format(date, 'HH:mm')} colors={colors} />
+          <InfoRow icon="time-outline" text={formatTime(date)} colors={colors} />
           <InfoRow icon="hourglass-outline" text={`${appointment.duration_minutes} minutos`} colors={colors} />
           {appointment.related_name ? (
             <InfoRow icon="person-outline" text={appointment.related_name} colors={colors} />

@@ -48,6 +48,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     loadSettings();
     checkPermissions();
+    setupAndroidChannel();
 
     // Add notification listeners
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
@@ -67,6 +68,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     };
   }, []);
+
+  const setupAndroidChannel = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        await Notifications.setNotificationChannelAsync('appointments', {
+          name: 'Recordatorios de Citas',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#dc2626',
+        });
+      } catch (e) {
+        console.error('Error setting up Android channel:', e);
+      }
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -106,7 +122,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     title: string,
     dateTime: Date
   ) => {
-    if (!settings.enabled || !hasPermission) return;
+    if (!settings.enabled) return;
+
+    // Request permission contextually if not yet granted
+    let granted = hasPermission;
+    if (!granted) {
+      granted = await requestPermissions();
+    }
+    if (!granted) return;
 
     // Cancel any existing reminders for this appointment
     await cancelAppointmentReminder(appointmentId);
@@ -118,7 +141,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     for (let i = 0; i < settings.reminderCount; i++) {
       const reminderOffset = settings.reminderTime * (i + 1); // 15, 30, 45 minutes, etc.
       const reminderDate = new Date(dateTime.getTime() - reminderOffset * 60 * 1000);
-      
+
       if (reminderDate > now) {
         reminderTimes.push({ date: reminderDate, offset: reminderOffset });
       }
@@ -127,7 +150,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Schedule each reminder
     for (const reminder of reminderTimes) {
       const identifier = `${appointmentId}_${reminder.offset}`;
-      
+
       await Notifications.scheduleNotificationAsync({
         identifier,
         content: {
@@ -137,7 +160,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           sound: true,
         },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
           date: reminder.date,
+          channelId: 'appointments',
         },
       });
     }

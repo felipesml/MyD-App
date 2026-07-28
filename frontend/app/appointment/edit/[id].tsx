@@ -15,6 +15,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appointmentsAPI } from '../../../src/api/client';
+import DateTimeField from '../../../src/components/DateTimeField';
 
 export default function EditAppointmentScreen() {
   const router = useRouter();
@@ -23,8 +24,7 @@ export default function EditAppointmentScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [appointmentType, setAppointmentType] = useState<'visita' | 'reunion' | 'llamada' | 'otro'>('visita');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [dateTime, setDateTime] = useState<Date>(new Date());
   const [durationMinutes, setDurationMinutes] = useState('60');
   const [notes, setNotes] = useState('');
   const [relatedEntity, setRelatedEntity] = useState<'client' | 'lead' | 'property' | undefined>(undefined);
@@ -43,9 +43,7 @@ export default function EditAppointmentScreen() {
       setTitle(appt.title);
       setDescription(appt.description || '');
       setAppointmentType(appt.appointment_type);
-      const d = new Date(appt.date_time);
-      setDate(appt.date_time.split('T')[0]);
-      setTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+      setDateTime(new Date(appt.date_time));
       setDurationMinutes(String(appt.duration_minutes));
       setNotes(appt.notes || '');
       setRelatedEntity(appt.related_entity);
@@ -58,20 +56,21 @@ export default function EditAppointmentScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !date || !time) {
-      Alert.alert('Error', 'Por favor completa título, fecha y hora');
+    if (!title.trim()) {
+      Alert.alert('Error', 'Por favor completa el título');
       return;
     }
     setIsLoading(true);
     try {
-      const dateTime = `${date}T${time}:00.000Z`;
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const dateTimeStr = `${dateTime.getFullYear()}-${pad(dateTime.getMonth() + 1)}-${pad(dateTime.getDate())}T${pad(dateTime.getHours())}:${pad(dateTime.getMinutes())}:00`;
       await appointmentsAPI.update(id!, {
         title: title.trim(),
         description: description.trim() || undefined,
         appointment_type: appointmentType,
         related_entity: relatedEntity,
         related_id: relatedId,
-        date_time: dateTime,
+        date_time: dateTimeStr,
         duration_minutes: parseInt(durationMinutes),
         notes: notes.trim() || undefined,
       });
@@ -114,15 +113,9 @@ export default function EditAppointmentScreen() {
               ))}
             </View>
           </View>
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.flex2]}>
-              <Text style={styles.label}>Fecha <Text style={styles.required}>*</Text></Text>
-              <TextInput style={styles.input} placeholder="2025-01-15" value={date} onChangeText={setDate} editable={!isLoading} />
-            </View>
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Hora <Text style={styles.required}>*</Text></Text>
-              <TextInput style={styles.input} placeholder="10:00" value={time} onChangeText={setTime} editable={!isLoading} />
-            </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Fecha y Hora <Text style={styles.required}>*</Text></Text>
+            <DateTimeField value={dateTime} onChange={setDateTime} />
           </View>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Duración (minutos)</Text>

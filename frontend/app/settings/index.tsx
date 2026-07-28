@@ -64,7 +64,11 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
-              <Ionicons name="person" size={32} color="#fff" />
+              {agent?.profile_photo ? (
+                <Image source={{ uri: agent.profile_photo }} style={styles.avatarImage} />
+              ) : (
+                <Ionicons name="person" size={32} color="#fff" />
+              )}
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>{agent?.name}</Text>
@@ -114,6 +118,22 @@ export default function SettingsScreen() {
               <View>
                 <Text style={styles.menuItemText}>Filtro de Regiones</Text>
                 <Text style={styles.menuItemSubtext}>Personaliza las regiones visibles</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/settings/formats')}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.menuIcon, { backgroundColor: colors.infoLight }]}>
+                <Ionicons name="calendar" size={20} color={colors.info} />
+              </View>
+              <View>
+                <Text style={styles.menuItemText}>Formato de Fecha y Hora</Text>
+                <Text style={styles.menuItemSubtext}>Personaliza cómo se muestran</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
@@ -233,6 +253,12 @@ const createStyles = (colors: any) =>
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
+      overflow: 'hidden',
+    },
+    avatarImage: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
     },
     profileInfo: {
       flex: 1,

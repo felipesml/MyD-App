@@ -114,15 +114,26 @@ export default function DashboardScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Image
-            source={require('../../assets/images/logo-login.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <View>
-            <Text style={styles.greeting}>Hola, {agent?.name?.split(' ')[0]}</Text>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/images/md-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.greetingBlock}>
+            <Text style={styles.greeting} numberOfLines={1}>Hola, {agent?.name?.split(' ')[0]}</Text>
             <Text style={styles.subGreeting}>M&D Propiedades</Text>
           </View>
+          <TouchableOpacity onPress={() => router.push('/settings/profile')} activeOpacity={0.8}>
+            {agent?.profile_photo ? (
+              <Image source={{ uri: agent.profile_photo }} style={styles.userAvatar} />
+            ) : (
+              <View style={styles.userAvatarPlaceholder}>
+                <Ionicons name="person" size={20} color="#fff" />
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
         <TouchableOpacity 
           onPress={() => router.push('/settings')} 
@@ -363,11 +374,38 @@ const createStyles = (colors: any, insets: any) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
+      flex: 1,
+    },
+    logoContainer: {
+      width: 44,
+      height: 44,
+      borderRadius: 10,
+      backgroundColor: '#ffffff',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 4,
+      ...shadows.sm,
     },
     logo: {
+      width: '100%',
+      height: '100%',
+    },
+    greetingBlock: {
+      flex: 1,
+    },
+    userAvatar: {
       width: 40,
       height: 40,
-      borderRadius: 8,
+      borderRadius: 20,
+      backgroundColor: brandColors.primaryLight,
+    },
+    userAvatarPlaceholder: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: brandColors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     greeting: {
       fontWeight: '700',

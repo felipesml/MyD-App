@@ -99,7 +99,15 @@ class AgentResponse(BaseModel):
     name: str
     email: str
     phone: str
+    profile_photo: Optional[str] = None
     created_at: datetime
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    profile_photo: Optional[str] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -314,6 +322,7 @@ async def register(agent_data: AgentRegister):
             name=agent_dict["name"],
             email=agent_dict["email"],
             phone=agent_dict["phone"],
+            profile_photo=agent_dict.get("profile_photo"),
             created_at=agent_dict["created_at"]
         )
     )
@@ -339,6 +348,7 @@ async def login(credentials: AgentLogin):
             name=agent["name"],
             email=agent["email"],
             phone=agent["phone"],
+            profile_photo=agent.get("profile_photo"),
             created_at=agent["created_at"]
         )
     )
@@ -351,7 +361,38 @@ async def get_current_agent_info(agent = Depends(get_current_agent)):
         name=agent["name"],
         email=agent["email"],
         phone=agent["phone"],
+        profile_photo=agent.get("profile_photo"),
         created_at=agent["created_at"]
+    )
+
+@api_router.put("/auth/me", response_model=AgentResponse)
+async def update_current_agent(data: AgentUpdate, agent = Depends(get_current_agent)):
+    """Update current agent profile (name, phone, photo, password)"""
+    update_fields = {}
+    if data.name is not None:
+        update_fields["name"] = data.name
+    if data.phone is not None:
+        update_fields["phone"] = data.phone
+    if data.profile_photo is not None:
+        update_fields["profile_photo"] = data.profile_photo
+
+    # Handle password change
+    if data.new_password:
+        if not data.current_password or not verify_password(data.current_password, agent["password"]):
+            raise HTTPException(status_code=400, detail="Contraseña actual incorrecta")
+        update_fields["password"] = hash_password(data.new_password)
+
+    if update_fields:
+        await db.agents.update_one({"_id": agent["_id"]}, {"$set": update_fields})
+
+    updated = await db.agents.find_one({"_id": agent["_id"]})
+    return AgentResponse(
+        id=str(updated["_id"]),
+        name=updated["name"],
+        email=updated["email"],
+        phone=updated["phone"],
+        profile_photo=updated.get("profile_photo"),
+        created_at=updated["created_at"]
     )
 
 

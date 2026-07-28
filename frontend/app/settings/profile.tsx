@@ -9,21 +9,24 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { agent } = useAuth();
+  const { agent, updateProfile } = useAuth();
   const { colors } = useTheme();
 
   const [name, setName] = useState(agent?.name || '');
   const [email, setEmail] = useState(agent?.email || '');
   const [phone, setPhone] = useState(agent?.phone || '');
+  const [photo, setPhoto] = useState<string | undefined>(agent?.profile_photo);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,18 +34,30 @@ export default function ProfileEditScreen() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
+  const pickPhoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (perm.status !== 'granted') {
+      Alert.alert('Permiso requerido', 'Se necesita acceso a la galería para elegir tu foto');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+    if (!result.canceled && result.assets[0].base64) {
+      setPhoto(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
   const handleSaveProfile = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'El nombre es obligatorio');
       return;
     }
 
-    if (!email.trim()) {
-      Alert.alert('Error', 'El email es obligatorio');
-      return;
-    }
-
-    // Check if password change is requested
     if (newPassword || confirmPassword) {
       if (!currentPassword) {
         Alert.alert('Error', 'Debes ingresar tu contraseña actual para cambiarla');
@@ -60,9 +75,14 @@ export default function ProfileEditScreen() {
 
     setIsLoading(true);
     try {
-      // TODO: Implement API call to update profile
-      // For now, just show success message
-      Alert.alert('Éxito', 'Perfil actualizado correctamente (funcionalidad pendiente)', [
+      await updateProfile({
+        name: name.trim(),
+        phone: phone.trim(),
+        profile_photo: photo,
+        current_password: currentPassword || undefined,
+        new_password: newPassword || undefined,
+      });
+      Alert.alert('Éxito', 'Perfil actualizado correctamente', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error: any) {
@@ -97,6 +117,23 @@ export default function ProfileEditScreen() {
         </View>
 
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          {/* Avatar */}
+          <View style={styles.avatarSection}>
+            <TouchableOpacity style={styles.avatarWrapper} onPress={pickPhoto} activeOpacity={0.8}>
+              {photo ? (
+                <Image source={{ uri: photo }} style={styles.avatarImage} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Ionicons name="person" size={40} color="#fff" />
+                </View>
+              )}
+              <View style={styles.cameraBadge}>
+                <Ionicons name="camera" size={16} color="#fff" />
+              </View>
+            </TouchableOpacity>
+            <Text style={styles.avatarHint}>Toca para cambiar tu foto</Text>
+          </View>
+
           {/* Profile Info Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Información Personal</Text>
@@ -116,14 +153,11 @@ export default function ProfileEditScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { opacity: 0.6 }]}
                 placeholder="tu@email.com"
                 placeholderTextColor={colors.textMuted}
                 value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!isLoading}
+                editable={false}
               />
             </View>
 
@@ -258,6 +292,48 @@ const createStyles = (colors: any) =>
     contentContainer: {
       padding: 16,
       paddingBottom: 32,
+    },
+    avatarSection: {
+      alignItems: 'center',
+      marginBottom: 24,
+    },
+    avatarWrapper: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      position: 'relative',
+    },
+    avatarImage: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: colors.surfaceSecondary,
+    },
+    avatarPlaceholder: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    cameraBadge: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: colors.background,
+    },
+    avatarHint: {
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: 8,
     },
     section: {
       marginBottom: 32,

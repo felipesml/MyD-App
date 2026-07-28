@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appointmentsAPI, clientsAPI, leadsAPI, propertiesAPI } from '../../src/api/client';
 import { Client, Lead, Property } from '../../src/types';
 import { useNotifications } from '../../src/contexts/NotificationContext';
+import DateTimeField from '../../src/components/DateTimeField';
 
 export default function AddAppointmentScreen() {
   const router = useRouter();
@@ -27,8 +28,11 @@ export default function AddAppointmentScreen() {
   const [appointmentType, setAppointmentType] = useState<'visita' | 'reunion' | 'llamada' | 'otro'>('visita');
   const [relatedEntity, setRelatedEntity] = useState<'client' | 'lead' | 'property' | null>(null);
   const [relatedId, setRelatedId] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [dateTime, setDateTime] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(10, 0, 0, 0);
+    return d;
+  });
   const [durationMinutes, setDurationMinutes] = useState('60');
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,14 +41,6 @@ export default function AddAppointmentScreen() {
   const [clients, setClients] = useState<Client[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
-
-  useEffect(() => {
-    // Set today's date as default
-    const today = new Date();
-    const dateStr = today.toISOString().split('T')[0];
-    setDate(dateStr);
-    setTime('10:00');
-  }, []);
 
   useEffect(() => {
     if (relatedEntity) {
@@ -76,14 +72,15 @@ export default function AddAppointmentScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !date || !time) {
-      Alert.alert('Error', 'Por favor completa título, fecha y hora');
+    if (!title.trim()) {
+      Alert.alert('Error', 'Por favor completa el título');
       return;
     }
 
     setIsLoading(true);
     try {
-      const dateTime = `${date}T${time}:00.000Z`;
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const dateTimeStr = `${dateTime.getFullYear()}-${pad(dateTime.getMonth() + 1)}-${pad(dateTime.getDate())}T${pad(dateTime.getHours())}:${pad(dateTime.getMinutes())}:00`;
 
       const newAppointment = await appointmentsAPI.create({
         title: title.trim(),
@@ -91,18 +88,13 @@ export default function AddAppointmentScreen() {
         appointment_type: appointmentType,
         related_entity: relatedEntity || undefined,
         related_id: relatedEntity && relatedId ? relatedId : undefined,
-        date_time: dateTime,
+        date_time: dateTimeStr,
         duration_minutes: parseInt(durationMinutes),
         notes: notes.trim() || undefined,
       });
 
       // Schedule notification reminder
-      const appointmentDate = new Date(`${date}T${time}:00`);
-      await scheduleAppointmentReminder(
-        newAppointment.id,
-        title.trim(),
-        appointmentDate
-      );
+      await scheduleAppointmentReminder(newAppointment.id, title.trim(), new Date(dateTime));
 
       Alert.alert('Éxito', 'Cita creada correctamente', [
         {
@@ -283,32 +275,11 @@ export default function AddAppointmentScreen() {
             {renderEntitySelector()}
           </View>
 
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.flex2]}>
-              <Text style={styles.label}>
-                Fecha <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="2025-01-15"
-                value={date}
-                onChangeText={setDate}
-                editable={!isLoading}
-              />
-            </View>
-
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>
-                Hora <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="10:00"
-                value={time}
-                onChangeText={setTime}
-                editable={!isLoading}
-              />
-            </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>
+              Fecha y Hora <Text style={styles.required}>*</Text>
+            </Text>
+            <DateTimeField value={dateTime} onChange={setDateTime} />
           </View>
 
           <View style={styles.inputGroup}>

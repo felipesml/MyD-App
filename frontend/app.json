@@ -9,13 +9,17 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo-splash.png",
+      "image": "./assets/images/md-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emergent.prospecttracker.u3a68r"
+      "bundleIdentifier": "com.emergent.prospecttracker.u3a68r",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Sube fotos de propiedades y tu perfil",
+        "NSCameraUsageDescription": "Toma fotos de propiedades"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +27,8 @@
         "backgroundColor": "#000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.emergent.prospecttracker.u3a68r"
+      "package": "com.emergent.prospecttracker.u3a68r",
+      "permissions": ["CAMERA", "READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE"]
     },
     "web": {
       "bundler": "metro",
@@ -35,10 +40,17 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo-splash.png",
-          "imageWidth": 300,
+          "image": "./assets/images/md-splash.png",
+          "imageWidth": 260,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Sube fotos de propiedades y tu perfil",
+          "cameraPermission": "Toma fotos de propiedades"
         }
       ],
       "expo-font"
