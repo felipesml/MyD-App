@@ -170,7 +170,7 @@ export default function PropertiesScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>Inmuebles</Text>
+          <Text style={styles.headerTitle}>Propiedades</Text>
           <Text style={styles.headerSubtitle}>{properties.length} propiedades</Text>
         </View>
         <TouchableOpacity 
