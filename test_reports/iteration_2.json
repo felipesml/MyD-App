@@ -1,0 +1,39 @@
+{
+  "summary": "Verified the three bug fixes reported by user in M&D Propiedades CRM: (1) Citas counter now reflects only status='programada' appointments; (2) Settings screen opens without crash when a profile_photo (base64) is set (Image now imported); (3) Past appointments auto-flip to 'no_informado' on any read and PUT/DELETE return 403; only PUT /status is allowed. Backend: 12/12 pytest tests pass in test_appointment_rules.py covering auto-status flip on GET single/list/dashboard, PUT 403, DELETE 403, PUT /status?new_status=no_informado|completada|cancelada, upcoming counter +1 on today/future create, PUT/DELETE 200 on today/future appointment, and profile_photo base64 roundtrip. Frontend (390x844 mobile viewport): logged in as agente@crm.com/password123, dashboard Citas counter loads via useFocusEffect on refocus, Settings gear button opens Configuración screen WITHOUT crash even with profile_photo set (base64 avatar renders as red circle), the past appointment detail screen (dated 3 days ago) correctly displays the yellow 'Esta cita ya venció...' banner + 'Actualizar Estado' section with three options (No Informado selected + checkmark, Completada, Cancelada) and hides the Editar/Eliminar action buttons.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global", "issues": ["(pre-existing, cosmetic) Console warnings: 'shadow*' style props deprecated (use 'boxShadow'), props.pointerEvents deprecated (use style.pointerEvents), [expo-notifications] web listener no-op — none block functionality"]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_appointment_rules.py",
+    "/app/backend/tests/test_crm_bugfixes.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_appointment_rules.xml"
+  ],
+  "action_items": [
+    "None - all three reported bugs are verified fixed. Optional: address the pre-existing cosmetic RN Web deprecation warnings noted above."
+  ],
+  "critical_code_review_comments": [
+    "server.py mark_past_appointments() is called on 3 read paths (GET /appointments, GET /appointments/{id}, GET /dashboard/stats) — good coverage; consider also calling it inside GET /appointments/upcoming for consistency (currently harmless because that endpoint also filters by date_time>=now).",
+    "AppointmentCreate.date_time uses default Pydantic datetime parsing which accepts any ISO datetime including past dates (allowing tests to seed via direct DB update after create — acceptable).",
+    "settings/index.tsx correctly imports Image and gates rendering with `agent?.profile_photo ? <Image .../> : <Ionicons .../>` — no more crash when photo is set.",
+    "appointment/[id].tsx: isPast uses local device time (`new Date()`), while backend uses UTC midnight; near-midnight edge cases might briefly disagree between UI banner and backend 403 — low risk, worth noting for future."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_appointment_rules.py (created)"
+  ],
+  "success_rate": {"backend": "100% (12/12 in test_appointment_rules + 16/16 in prior test_crm_bugfixes)", "frontend": "100% of the 3 targeted flows verified"},
+  "seed_data_creation": "Direct-DB seeded a 'programada' appointment 3 days in the past (title=TEST_UI_PastAppt) plus a tiny base64 profile_photo on agente@crm.com to reproduce the two UI scenarios. Both were cleaned up after testing (appointment deleted, profile_photo unset).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Use EXPO_PUBLIC_BACKEND_URL (https://prospect-tracker-64.preview.emergentagent.com). Login: agente@crm.com / password123. To reproduce a past appointment for UI: POST /api/appointments with a future date, then update its date_time via Mongo (MONGO_URL / DB_NAME from /app/backend/.env, collection appointments) to 3 days ago with status='programada'. Backend auto-flips it to 'no_informado' on next GET. Server day appears to be Jul 30, 2026 (calendar in Agenda tab confirms). appointment/[id].tsx uses local time isPast check while backend uses UTC midnight — negligible mismatch except near UTC midnight boundary.",
+  "rca_of_issue": "Root causes and fixes verified: (a) Dashboard 'Citas' stale — dashboard.tsx uses useFocusEffect(loadData) so returning to Inicio triggers reload; backend now counts only status=='programada' regardless of date so newly-created future appointment increases upcoming_appointments by exactly 1 (confirmed by test). (b) Settings crash — was caused by missing `Image` import in settings/index.tsx; fix imports Image and renders <Image source={{uri: agent.profile_photo}} .../> — verified with a base64 photo saved on the agent (Configuración page opened cleanly, avatar visible). (c) Past appointment lock — server.py mark_past_appointments() flips status to no_informado on every list/detail/stats read; PUT and DELETE both check `appt['date_time'] < _today_start()` and raise HTTPException(403). PUT /status endpoint accepts 'no_informado' (added to allowed list). Frontend appointment/[id].tsx computes isPast client-side and swaps the action area to a yellow warning banner + 3-option status selector; when future, it keeps the original Editar/Eliminar buttons. All verified end-to-end via pytest (12/12 pass) and Playwright walkthrough."
+}

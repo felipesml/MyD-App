@@ -20,6 +20,20 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { usePreferences } from '../../src/contexts/PreferencesContext';
 import { fonts, brandColors, spacing, borderRadius, shadows } from '../../src/theme';
 
+const APPT_STATUS_COLORS: Record<string, string> = {
+  programada: '#10b981',
+  completada: '#3b82f6',
+  cancelada: '#ef4444',
+  no_informado: '#f59e0b',
+};
+
+const APPT_STATUS_LABELS: Record<string, string> = {
+  programada: 'Programada',
+  completada: 'Completada',
+  cancelada: 'Cancelada',
+  no_informado: 'No Informado',
+};
+
 // Configure Spanish locale for calendar
 LocaleConfig.locales['es'] = {
   monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
@@ -282,47 +296,22 @@ export default function CalendarScreen() {
                       <View
                         style={[
                           styles.statusBadge,
-                          {
-                            backgroundColor:
-                              appointment.status === 'programada'
-                                ? '#10b98120'
-                                : appointment.status === 'completada'
-                                ? '#3b82f620'
-                                : '#ef444420',
-                          },
+                          { backgroundColor: (APPT_STATUS_COLORS[appointment.status] || '#6b7280') + '20' },
                         ]}
                       >
                         <View
                           style={[
                             styles.statusDot,
-                            {
-                              backgroundColor:
-                                appointment.status === 'programada'
-                                  ? '#10b981'
-                                  : appointment.status === 'completada'
-                                  ? '#3b82f6'
-                                  : '#ef4444',
-                            },
+                            { backgroundColor: APPT_STATUS_COLORS[appointment.status] || '#6b7280' },
                           ]}
                         />
                         <Text
                           style={[
                             styles.statusText,
-                            {
-                              color:
-                                appointment.status === 'programada'
-                                  ? '#10b981'
-                                  : appointment.status === 'completada'
-                                  ? '#3b82f6'
-                                  : '#ef4444',
-                            },
+                            { color: APPT_STATUS_COLORS[appointment.status] || '#6b7280' },
                           ]}
                         >
-                          {appointment.status === 'programada' 
-                            ? 'Programada' 
-                            : appointment.status === 'completada'
-                            ? 'Completada'
-                            : 'Cancelada'}
+                          {APPT_STATUS_LABELS[appointment.status] || appointment.status}
                         </Text>
                       </View>
                     </View>

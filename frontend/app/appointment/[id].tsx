@@ -131,6 +131,15 @@ export default function AppointmentDetailScreen() {
   }
 
   const date = parseISO(appointment.date_time);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const isPast = date < todayStart;
+
+  const STATUS_OPTIONS = [
+    { value: 'no_informado', label: 'No Informado', icon: 'help-circle-outline', color: '#f59e0b' },
+    { value: 'completada', label: 'Completada', icon: 'checkmark-circle-outline', color: '#3b82f6' },
+    { value: 'cancelada', label: 'Cancelada', icon: 'close-circle-outline', color: '#ef4444' },
+  ];
 
   return (
     <View style={styles.container}>
@@ -186,29 +195,61 @@ export default function AppointmentDetailScreen() {
           </View>
         ) : null}
 
-        {appointment.status === 'programada' && (
-          <View style={styles.statusActions}>
-            <TouchableOpacity style={styles.completeBtn} onPress={() => updateStatus('completada')}>
-              <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-              <Text style={styles.completeBtnText}>Completar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => updateStatus('cancelada')}>
-              <Ionicons name="close-circle-outline" size={20} color="#ef4444" />
-              <Text style={styles.cancelBtnText}>Cancelar cita</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {isPast ? (
+          <>
+            <View style={styles.pastBanner}>
+              <Ionicons name="alert-circle" size={20} color="#f59e0b" />
+              <Text style={styles.pastBannerText}>
+                Esta cita ya venció. No se puede editar ni eliminar, solo actualizar su estado.
+              </Text>
+            </View>
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Actualizar Estado</Text>
+              {STATUS_OPTIONS.map((opt) => {
+                const selected = appointment.status === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[styles.statusOption, selected && { borderColor: opt.color, backgroundColor: opt.color + '15' }]}
+                    onPress={() => updateStatus(opt.value)}
+                  >
+                    <Ionicons name={opt.icon as any} size={22} color={opt.color} />
+                    <Text style={[styles.statusOptionText, selected && { color: opt.color, fontWeight: '700' }]}>
+                      {opt.label}
+                    </Text>
+                    {selected && <Ionicons name="checkmark" size={20} color={opt.color} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        ) : (
+          <>
+            {appointment.status === 'programada' && (
+              <View style={styles.statusActions}>
+                <TouchableOpacity style={styles.completeBtn} onPress={() => updateStatus('completada')}>
+                  <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                  <Text style={styles.completeBtnText}>Completar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => updateStatus('cancelada')}>
+                  <Ionicons name="close-circle-outline" size={20} color="#ef4444" />
+                  <Text style={styles.cancelBtnText}>Cancelar cita</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/appointment/edit/${id}`)}>
-            <Ionicons name="create-outline" size={20} color="#fff" />
-            <Text style={styles.editButtonText}>Editar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-            <Ionicons name="trash-outline" size={20} color="#ef4444" />
-            <Text style={styles.deleteButtonText}>Eliminar</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.buttonsContainer}>
+              <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/appointment/edit/${id}`)}>
+                <Ionicons name="create-outline" size={20} color="#fff" />
+                <Text style={styles.editButtonText}>Editar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                <Text style={styles.deleteButtonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -248,6 +289,28 @@ const createStyles = (colors: any, insets: any) =>
     typeBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
     typeBadgeText: { fontWeight: '600', fontSize: 13 },
     card: { backgroundColor: colors.surface, borderRadius: 12, padding: 16, marginBottom: 16 },
+    pastBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: '#fef3c7',
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 16,
+    },
+    pastBannerText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 18 },
+    statusOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 14,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      marginBottom: 8,
+    },
+    statusOptionText: { flex: 1, fontSize: 15, color: colors.text, fontWeight: '500' },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 8 },
     descText: { fontSize: 15, color: colors.text, lineHeight: 22 },
     statusBadge: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 },
