@@ -1,7 +1,8 @@
 import { Stack } from 'expo-router';
 import React from 'react';
+import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from '../src/contexts/AuthContext';
-import { ThemeProvider } from '../src/contexts/ThemeContext';
+import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { RegionProvider } from '../src/contexts/RegionContext';
 import { NotificationProvider } from '../src/contexts/NotificationContext';
 import { PreferencesProvider } from '../src/contexts/PreferencesContext';
@@ -9,6 +10,12 @@ import * as SplashScreen from 'expo-splash-screen';
 
 // Prevent auto-hiding of splash screen
 SplashScreen.preventAutoHideAsync();
+
+function ThemedStatusBar() {
+  const { isDark, colors } = useTheme();
+  // In light mode use dark icons/text; in dark mode use light icons/text.
+  return <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />;
+}
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = React.useState(false);
@@ -44,6 +51,7 @@ export default function RootLayout() {
         <PreferencesProvider>
           <NotificationProvider>
             <AuthProvider>
+              <ThemedStatusBar />
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="index" />
                 <Stack.Screen name="(auth)" />
