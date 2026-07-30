@@ -142,7 +142,7 @@ export const appointmentsAPI = {
     return response.data;
   },
   updateStatus: async (id: string, status: string): Promise<void> => {
-    await apiClient.put(`/appointments/${id}/status`, null, { params: { status } });
+    await apiClient.put(`/appointments/${id}/status`, null, { params: { new_status: status } });
   },
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/appointments/${id}`);
