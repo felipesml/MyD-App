@@ -43,12 +43,14 @@ const STATUS_LABELS: Record<string, string> = {
   programada: 'Programada',
   completada: 'Completada',
   cancelada: 'Cancelada',
+  no_informado: 'No Informado',
 };
 
 const STATUS_COLORS: Record<string, string> = {
   programada: '#10b981',
   completada: '#3b82f6',
   cancelada: '#ef4444',
+  no_informado: '#f59e0b',
 };
 
 export default function AppointmentDetailScreen() {

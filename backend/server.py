@@ -1227,10 +1227,23 @@ async def delete_property(property_id: str, agent = Depends(get_current_agent)):
 
 # ==================== APPOINTMENTS ROUTES ====================
 
+def _today_start() -> datetime:
+    """Midnight of the current day (used to detect past appointments)."""
+    now = datetime.utcnow()
+    return datetime(now.year, now.month, now.day)
+
+async def mark_past_appointments(agent_id: str):
+    """Auto-change status of past (yesterday or earlier) 'programada' appointments to 'no_informado'."""
+    await db.appointments.update_many(
+        {"agent_id": agent_id, "date_time": {"$lt": _today_start()}, "status": "programada"},
+        {"$set": {"status": "no_informado"}}
+    )
+
 @api_router.get("/appointments", response_model=List[AppointmentResponse])
 async def get_appointments(agent = Depends(get_current_agent)):
     """Get all appointments for the current agent"""
     agent_id = str(agent["_id"])
+    await mark_past_appointments(agent_id)
     appointments = await db.appointments.find({"agent_id": agent_id}).to_list(1000)
     
     result = []
@@ -1375,6 +1388,7 @@ async def get_upcoming_appointments(agent = Depends(get_current_agent)):
 async def get_appointment(appointment_id: str, agent = Depends(get_current_agent)):
     """Get a specific appointment"""
     agent_id = str(agent["_id"])
+    await mark_past_appointments(agent_id)
     
     try:
         appt = await db.appointments.find_one({"_id": ObjectId(appointment_id), "agent_id": agent_id})
@@ -1426,6 +1440,13 @@ async def update_appointment(appointment_id: str, appointment_data: AppointmentC
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
+    # Block editing past appointments (yesterday or earlier)
+    if appt["date_time"] < _today_start():
+        raise HTTPException(
+            status_code=403,
+            detail="No se puede editar una cita vencida. Solo puedes cambiar su estado."
+        )
+    
     update_dict = {
         "title": appointment_data.title,
         "description": appointment_data.description,
@@ -1476,7 +1497,7 @@ async def update_appointment_status(appointment_id: str, new_status: str = Query
     """Update appointment status"""
     agent_id = str(agent["_id"])
     
-    if new_status not in ["programada", "completada", "cancelada"]:
+    if new_status not in ["programada", "completada", "cancelada", "no_informado"]:
         raise HTTPException(status_code=400, detail="Invalid status")
     
     try:
@@ -1516,6 +1537,13 @@ async def delete_appointment(appointment_id: str, agent = Depends(get_current_ag
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
+    # Block deleting past appointments (yesterday or earlier)
+    if appt["date_time"] < _today_start():
+        raise HTTPException(
+            status_code=403,
+            detail="No se puede eliminar una cita vencida. Solo puedes cambiar su estado."
+        )
+    
     await db.appointments.delete_one({"_id": ObjectId(appointment_id)})
     
     # Create activity
@@ -1553,6 +1581,7 @@ async def get_activities(limit: int = 50, agent = Depends(get_current_agent)):
 async def get_dashboard_stats(agent = Depends(get_current_agent)):
     """Get dashboard statistics for the current agent"""
     agent_id = str(agent["_id"])
+    await mark_past_appointments(agent_id)
     
     # Count totals
     total_clients = await db.clients.count_documents({"agent_id": agent_id})
@@ -1560,12 +1589,9 @@ async def get_dashboard_stats(agent = Depends(get_current_agent)):
     total_properties = await db.properties.count_documents({"agent_id": agent_id})
     active_properties = await db.properties.count_documents({"agent_id": agent_id, "status": "disponible"})
     
-    # Count upcoming appointments (next 7 days)
-    now = datetime.utcnow()
-    week_later = now + timedelta(days=7)
+    # Count upcoming appointments (today and future, still 'programada')
     upcoming_appointments = await db.appointments.count_documents({
         "agent_id": agent_id,
-        "date_time": {"$gte": now, "$lte": week_later},
         "status": "programada"
     })
     
